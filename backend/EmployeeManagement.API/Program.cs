@@ -1,3 +1,5 @@
+using EmployeeManagement.API.Data;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 
 Log.Logger = new LoggerConfiguration()
@@ -13,6 +15,14 @@ try
         .ReadFrom.Services(services)
         .Enrich.FromLogContext()
         .WriteTo.Console());
+
+    // EF Core + Npgsql
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        options.UseNpgsql(
+            builder.Configuration.GetConnectionString("DefaultConnection"),
+            npgsql => npgsql.MigrationsAssembly("EmployeeManagement.API")
+        )
+    );
 
     builder.Services.AddControllers();
     builder.Services.AddEndpointsApiExplorer();
@@ -41,14 +51,12 @@ try
     }
 
     app.UseHttpsRedirection();
-
     app.UseAuthorization();
-
     app.MapControllers();
 
     app.Run();
 }
-catch (Exception ex)
+catch (Exception ex) when (ex is not HostAbortedException)
 {
     Log.Fatal(ex, "Application terminated unexpectedly");
 }
