@@ -1,0 +1,30 @@
+## .NET / C#
+bin/
+obj/
+TestResults/
+[Dd]ebug/
+[Rr]elease/
+*.user
+*.suo
+*.userprefs
+*.pidb
+*.booproj
+.vs/
+.vscode/
+.idea/
+
+## Secrets & Local Config
+.env
+.env.*
+!.env.example
+secrets.json
+
+## Node / Frontend
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+## OS
+.DS_Store
+Thumbs.db
