@@ -16,12 +16,14 @@ namespace EmployeeManagement.API.Services;
 public class EmployeeService : IEmployeeService
 {
     private readonly ApplicationDbContext _dbContext;
+    private readonly ILeaveBalanceService _leaveBalanceService;
     private readonly ILogger<EmployeeService> _logger;
 
-    public EmployeeService(ApplicationDbContext dbContext, ILogger<EmployeeService> logger)
+    public EmployeeService(ApplicationDbContext dbContext, ILogger<EmployeeService> logger, ILeaveBalanceService? leaveBalanceService = null)
     {
         _dbContext = dbContext;
         _logger = logger;
+        _leaveBalanceService = leaveBalanceService ?? new LeaveBalanceService(dbContext, LoggerFactory.Create(b => b.AddConsole()).CreateLogger<LeaveBalanceService>());
     }
 
     /// <summary>
@@ -302,25 +304,8 @@ public class EmployeeService : IEmployeeService
 
         // 5. Auto-seed initial leave balances for the new employee (FR-LEV-09)
         var currentYear = DateTime.UtcNow.Year;
-        var activeLeaveTypes = await _dbContext.LeaveTypes
-            .Where(lt => lt.IsActive)
-            .ToListAsync();
+        await _leaveBalanceService.CreateBalancesForEmployeeAsync(employee.Id, currentYear);
 
-        foreach (var lt in activeLeaveTypes)
-        {
-            _dbContext.LeaveBalances.Add(new LeaveBalance
-            {
-                EmployeeId = employee.Id,
-                LeaveTypeId = lt.Id,
-                Year = currentYear,
-                AllocatedDays = lt.DefaultDays,
-                UsedDays = 0,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            });
-        }
-
-        await _dbContext.SaveChangesAsync();
         _logger.LogInformation("Employee {EmployeeCode} ({Name}) created with ID {EmployeeId}",
             employee.EmployeeCode, employee.FullName, employee.Id);
 

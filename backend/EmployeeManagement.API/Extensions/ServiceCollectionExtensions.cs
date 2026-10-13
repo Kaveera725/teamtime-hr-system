@@ -18,6 +18,10 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IDepartmentService, DepartmentService>();
         services.AddScoped<IEmployeeService, EmployeeService>();
 
+        // Leave type & Leave balance services (Sections 3.5, 7.6, 7.8, 8.5, FR-LEV-08, FR-LEV-09, BR-15)
+        services.AddScoped<ILeaveTypeService, LeaveTypeService>();
+        services.AddScoped<ILeaveBalanceService, LeaveBalanceService>();
+
         // Additional services will be registered as implemented in subsequent tasks:
         // services.AddScoped<IAttendanceService, AttendanceService>();
         // services.AddScoped<ILeaveService, LeaveService>();
