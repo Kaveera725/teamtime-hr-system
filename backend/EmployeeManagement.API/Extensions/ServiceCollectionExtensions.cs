@@ -14,8 +14,11 @@ public static class ServiceCollectionExtensions
         // Authentication & User management service
         services.AddScoped<IAuthService, AuthService>();
 
+        // Department & Employee services (Sections 3.2, 3.3, 8.2, 8.3)
+        services.AddScoped<IDepartmentService, DepartmentService>();
+        services.AddScoped<IEmployeeService, EmployeeService>();
+
         // Additional services will be registered as implemented in subsequent tasks:
-        // services.AddScoped<IEmployeeService, EmployeeService>();
         // services.AddScoped<IAttendanceService, AttendanceService>();
         // services.AddScoped<ILeaveService, LeaveService>();
 

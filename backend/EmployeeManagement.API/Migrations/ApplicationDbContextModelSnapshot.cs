@@ -208,15 +208,22 @@ namespace EmployeeManagement.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("DepartmentId");
-
                     b.HasIndex("EmployeeCode")
                         .IsUnique()
                         .HasDatabaseName("ix_employees_employee_code");
 
+                    b.HasIndex("Status")
+                        .HasDatabaseName("ix_employees_status");
+
                     b.HasIndex("UserId")
                         .IsUnique()
                         .HasDatabaseName("ix_employees_user_id");
+
+                    b.HasIndex("DepartmentId", "Status")
+                        .HasDatabaseName("ix_employees_department_id_status");
+
+                    b.HasIndex("FirstName", "LastName")
+                        .HasDatabaseName("ix_employees_first_name_last_name");
 
                     b.ToTable("employees", (string)null);
                 });

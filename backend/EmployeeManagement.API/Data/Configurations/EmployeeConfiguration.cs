@@ -81,6 +81,16 @@ public class EmployeeConfiguration : IEntityTypeConfiguration<Employee>
             .IsUnique()
             .HasDatabaseName("ix_employees_user_id");
 
+        // Indexes for search and filters (NFR-01)
+        builder.HasIndex(e => e.Status)
+            .HasDatabaseName("ix_employees_status");
+
+        builder.HasIndex(e => new { e.DepartmentId, e.Status })
+            .HasDatabaseName("ix_employees_department_id_status");
+
+        builder.HasIndex(e => new { e.FirstName, e.LastName })
+            .HasDatabaseName("ix_employees_first_name_last_name");
+
         // FK: employees.user_id -> users.id  (restrictive, one-to-one)
         builder.HasOne(e => e.User)
             .WithOne(u => u.Employee)
