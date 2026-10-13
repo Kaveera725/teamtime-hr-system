@@ -214,22 +214,24 @@ public class AuthService : IAuthService
     private (string token, DateTime expiresAt) GenerateJwtToken(User user)
     {
         var jwtKey = _configuration["Jwt:Key"]
-            ?? _configuration["Jwt__Key"]
-            ?? "super_secret_jwt_key_that_is_at_least_32_characters_long_for_security";
+            ?? throw new InvalidOperationException("Jwt:Key is not configured.");
+        if (jwtKey.Length < 32)
+        {
+            throw new InvalidOperationException("Jwt:Key must be at least 32 characters long.");
+        }
+
         var jwtIssuer = _configuration["Jwt:Issuer"]
-            ?? _configuration["Jwt__Issuer"]
-            ?? "EmployeeManagementAPI";
+            ?? throw new InvalidOperationException("Jwt:Issuer is not configured.");
+
         var jwtAudience = _configuration["Jwt:Audience"]
-            ?? _configuration["Jwt__Audience"]
-            ?? "EmployeeManagementWeb";
+            ?? throw new InvalidOperationException("Jwt:Audience is not configured.");
 
         var expiryMinutesStr = _configuration["Jwt:ExpiryMinutes"]
-            ?? _configuration["Jwt__ExpiryMinutes"]
-            ?? "60";
+            ?? throw new InvalidOperationException("Jwt:ExpiryMinutes is not configured.");
 
-        if (!int.TryParse(expiryMinutesStr, out var expiryMinutes))
+        if (!int.TryParse(expiryMinutesStr, out var expiryMinutes) || expiryMinutes <= 0)
         {
-            expiryMinutes = 60;
+            throw new InvalidOperationException("Jwt:ExpiryMinutes must be a valid positive number.");
         }
 
         var expiresAt = DateTime.UtcNow.AddMinutes(expiryMinutes);

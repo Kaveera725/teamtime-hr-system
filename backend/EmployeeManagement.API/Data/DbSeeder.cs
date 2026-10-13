@@ -21,13 +21,14 @@ public static class DbSeeder
             return;
         }
 
-        var adminEmail = configuration["Seed:AdminEmail"]
-            ?? configuration["Seed__AdminEmail"]
-            ?? "admin@company.com";
+        var adminEmail = configuration["Seed:AdminEmail"];
+        var adminPassword = configuration["Seed:AdminPassword"];
 
-        var adminPassword = configuration["Seed:AdminPassword"]
-            ?? configuration["Seed__AdminPassword"]
-            ?? "Admin@123456ChangeMe!";
+        if (string.IsNullOrWhiteSpace(adminEmail) || string.IsNullOrWhiteSpace(adminPassword))
+        {
+            Log.Warning("Skipping admin user seeding: Seed:AdminEmail or Seed:AdminPassword is not configured.");
+            return;
+        }
 
         var itDepartment = await context.Departments.FirstOrDefaultAsync(d => d.Name == "IT")
             ?? await context.Departments.FirstOrDefaultAsync();

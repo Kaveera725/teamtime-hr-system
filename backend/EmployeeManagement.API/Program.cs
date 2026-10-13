@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 using System.Threading.RateLimiting;
@@ -7,7 +8,6 @@ using EmployeeManagement.API.Middleware;
 using EmployeeManagement.API.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
@@ -28,7 +28,7 @@ try
         .Enrich.FromLogContext()
         .WriteTo.Console());
 
-    // EF Core + Npgsql Database context
+    // EF Core + Npgsql
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
         options.UseNpgsql(
             builder.Configuration.GetConnectionString("DefaultConnection"),
@@ -36,12 +36,16 @@ try
         )
     );
 
-    // Consistent DI registration pattern for application services
+    // Application services (DI registration pattern)
     builder.Services.AddApplicationServices(builder.Configuration);
 
-    // CORS configuration limited to configured frontend origins
+    // Health checks (NFR-04): includes a database connectivity check
+    builder.Services.AddHealthChecks()
+        .AddDbContextCheck<ApplicationDbContext>("database");
+
+    // CORS limited to the configured frontend origins.
+    // Environment variable Cors__AllowedOrigins maps to Cors:AllowedOrigins automatically.
     var corsOriginsConfig = builder.Configuration["Cors:AllowedOrigins"]
-        ?? builder.Configuration["Cors__AllowedOrigins"]
         ?? "http://localhost:5173,http://localhost:3000";
 
     var allowedOrigins = corsOriginsConfig
@@ -58,28 +62,32 @@ try
         });
     });
 
-    // Rate limiting for login endpoint (Section 9)
+    // Rate limiting for the login endpoint (Section 9), counted per client IP
     builder.Services.AddRateLimiter(options =>
     {
-        options.AddFixedWindowLimiter("LoginPolicy", opt =>
-        {
-            opt.Window = TimeSpan.FromMinutes(1);
-            opt.PermitLimit = 10;
-            opt.QueueLimit = 0;
-        });
         options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+        options.AddPolicy("LoginPolicy", httpContext =>
+            RateLimitPartition.GetFixedWindowLimiter(
+                httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                _ => new FixedWindowRateLimiterOptions
+                {
+                    Window = TimeSpan.FromMinutes(1),
+                    PermitLimit = 10,
+                    QueueLimit = 0
+                }));
     });
 
-    // JWT Authentication configuration (Sections 3.1, 8.1, 9)
+    // JWT settings: no hard-coded fallbacks. The app refuses to start if they are missing.
     var jwtKey = builder.Configuration["Jwt:Key"]
-        ?? builder.Configuration["Jwt__Key"]
-        ?? "super_secret_jwt_key_that_is_at_least_32_characters_long_for_security";
+        ?? throw new InvalidOperationException(
+            "Jwt:Key is not configured. Set it with: dotnet user-secrets set \"Jwt:Key\" \"<32+ characters>\"");
+    if (jwtKey.Length < 32)
+        throw new InvalidOperationException("Jwt:Key must be at least 32 characters long.");
+
     var jwtIssuer = builder.Configuration["Jwt:Issuer"]
-        ?? builder.Configuration["Jwt__Issuer"]
-        ?? "EmployeeManagementAPI";
+        ?? throw new InvalidOperationException("Jwt:Issuer is not configured.");
     var jwtAudience = builder.Configuration["Jwt:Audience"]
-        ?? builder.Configuration["Jwt__Audience"]
-        ?? "EmployeeManagementWeb";
+        ?? throw new InvalidOperationException("Jwt:Audience is not configured.");
 
     builder.Services.AddAuthentication(options =>
     {
@@ -88,7 +96,7 @@ try
     })
     .AddJwtBearer(options =>
     {
-        options.RequireHttpsMetadata = false;
+        options.RequireHttpsMetadata = false; // local development; enforce HTTPS in production
         options.SaveToken = true;
         options.TokenValidationParameters = new TokenValidationParameters
         {
@@ -99,10 +107,12 @@ try
             ValidateAudience = true,
             ValidAudience = jwtAudience,
             ValidateLifetime = true,
-            ClockSkew = TimeSpan.Zero
+            ClockSkew = TimeSpan.Zero,
+            // AuthService must write the role using ClaimTypes.Role
+            RoleClaimType = ClaimTypes.Role
         };
 
-        // Format 401 and 403 responses as RFC 7807 ProblemDetails
+        // 401 and 403 as RFC 7807 ProblemDetails
         options.Events = new JwtBearerEvents
         {
             OnChallenge = async context =>
@@ -114,7 +124,7 @@ try
                 {
                     Status = StatusCodes.Status401Unauthorized,
                     Title = "Unauthorized",
-                    Detail = "You must be authenticated with a valid Bearer token to access this resource.",
+                    Detail = "You must be signed in with a valid token to access this resource.",
                     Instance = context.Request.Path
                 };
                 await context.Response.WriteAsync(JsonSerializer.Serialize(problem));
@@ -127,7 +137,7 @@ try
                 {
                     Status = StatusCodes.Status403Forbidden,
                     Title = "Forbidden",
-                    Detail = "You do not have the required permissions to perform this action.",
+                    Detail = "You do not have permission to perform this action.",
                     Instance = context.Request.Path
                 };
                 await context.Response.WriteAsync(JsonSerializer.Serialize(problem));
@@ -141,10 +151,11 @@ try
         options.AddPolicy("AdminOnly", policy => policy.RequireRole(UserRole.ADMIN.ToString()));
         options.AddPolicy("ManagerOnly", policy => policy.RequireRole(UserRole.MANAGER.ToString()));
         options.AddPolicy("EmployeeOnly", policy => policy.RequireRole(UserRole.EMPLOYEE.ToString()));
-        options.AddPolicy("ManagerOrAdmin", policy => policy.RequireRole(UserRole.MANAGER.ToString(), UserRole.ADMIN.ToString()));
+        options.AddPolicy("ManagerOrAdmin", policy => policy.RequireRole(
+            UserRole.MANAGER.ToString(), UserRole.ADMIN.ToString()));
     });
 
-    // Controllers and RFC 7807 Model Validation response
+    // Controllers and RFC 7807 validation responses
     builder.Services.AddControllers()
         .ConfigureApiBehaviorOptions(options =>
         {
@@ -178,7 +189,7 @@ try
 
         c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
         {
-            Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+            Description = "JWT Authorization header using the Bearer scheme. Paste only the token.",
             Name = "Authorization",
             In = ParameterLocation.Header,
             Type = SecuritySchemeType.Http,
@@ -194,7 +205,7 @@ try
 
     var app = builder.Build();
 
-    // Global exception middleware returning RFC 7807 ProblemDetails
+    // Global exception middleware (RFC 7807). Keep it first.
     app.UseMiddleware<ExceptionMiddleware>();
 
     app.UseSerilogRequestLogging();
@@ -213,10 +224,21 @@ try
     app.UseRateLimiter();
     app.UseAuthentication();
     app.UseAuthorization();
-    app.MapControllers();
 
-    // Seed first administrator on startup if no admin exists (Section 7.10, 9)
-    await DbSeeder.SeedAdminAsync(app.Services, app.Configuration);
+    app.MapControllers();
+    app.MapHealthChecks("/health");
+
+    // Seed the first administrator if none exists (Section 7.10, 9).
+    // Requires the database tables, so migrations must be applied first.
+    try
+    {
+        await DbSeeder.SeedAdminAsync(app.Services, app.Configuration);
+    }
+    catch (Exception ex)
+    {
+        throw new InvalidOperationException(
+            "Admin seeding failed. Have you applied the migrations? Run: dotnet ef database update", ex);
+    }
 
     app.Run();
 }
