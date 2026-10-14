@@ -28,6 +28,9 @@ public static class ServiceCollectionExtensions
         // Leave request workflow service (Sections 3.5, 5, 8.5, BR-01 to BR-09)
         services.AddScoped<ILeaveService, LeaveService>();
 
+        // Dashboard aggregation service (Section 3.6, FR-DSH-01, FR-DSH-02, FR-DSH-03)
+        services.AddScoped<IDashboardService, DashboardService>();
+
         return services;
     }
 }
