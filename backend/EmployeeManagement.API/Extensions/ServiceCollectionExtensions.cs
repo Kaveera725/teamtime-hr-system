@@ -25,8 +25,8 @@ public static class ServiceCollectionExtensions
         // Attendance service (Sections 3.4 and 8.4, BR-10 to BR-14)
         services.AddScoped<IAttendanceService, AttendanceService>();
 
-        // Additional services will be registered as implemented in subsequent tasks:
-        // services.AddScoped<ILeaveService, LeaveService>();
+        // Leave request workflow service (Sections 3.5, 5, 8.5, BR-01 to BR-09)
+        services.AddScoped<ILeaveService, LeaveService>();
 
         return services;
     }
