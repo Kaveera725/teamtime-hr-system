@@ -240,6 +240,24 @@ try
             "Admin seeding failed. Have you applied the migrations? Run: dotnet ef database update", ex);
     }
 
+    // Development-only demo data seed command (e.g. dotnet run -- seed-demo)
+    var isSeedDemoCommand = args.Contains("seed-demo", StringComparer.OrdinalIgnoreCase)
+        || args.Contains("--seed-demo", StringComparer.OrdinalIgnoreCase);
+
+    if (isSeedDemoCommand)
+    {
+        if (!app.Environment.IsDevelopment())
+        {
+            Log.Error("Demo data seeding is restricted strictly to Development environment.");
+            Environment.ExitCode = 1;
+            return;
+        }
+
+        var success = await DemoDataSeeder.SeedDemoDataAsync(app.Services, app.Configuration, app.Environment);
+        Environment.ExitCode = success ? 0 : 1;
+        return;
+    }
+
     app.Run();
 }
 catch (Exception ex) when (ex is not HostAbortedException)
