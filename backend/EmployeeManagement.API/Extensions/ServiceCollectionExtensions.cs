@@ -22,8 +22,10 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ILeaveTypeService, LeaveTypeService>();
         services.AddScoped<ILeaveBalanceService, LeaveBalanceService>();
 
+        // Attendance service (Sections 3.4 and 8.4, BR-10 to BR-14)
+        services.AddScoped<IAttendanceService, AttendanceService>();
+
         // Additional services will be registered as implemented in subsequent tasks:
-        // services.AddScoped<IAttendanceService, AttendanceService>();
         // services.AddScoped<ILeaveService, LeaveService>();
 
         return services;
