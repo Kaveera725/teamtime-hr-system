@@ -145,27 +145,84 @@ export interface LeaveListParams {
 }
 
 // ── Attendance ────────────────────────────────────────────
-export type AttendanceStatus = 'PRESENT' | 'LATE' | 'HALF_DAY' | 'ABSENT';
+export type AttendanceStatus = 'PRESENT' | 'LATE' | 'HALF_DAY' | 'ABSENT' | 'ON_LEAVE' | 'WEEKEND';
 
 export interface AttendanceDto {
-  id: string;
-  employeeId: string;
+  id: string | number;
+  employeeId: string | number;
   employeeName: string;
-  date: string;
-  checkInTime?: string;
-  checkOutTime?: string;
+  employeeCode?: string;
+  departmentName?: string;
+  attendanceDate: string; // ISO date YYYY-MM-DD
+  date?: string;          // Alias for convenience
+  checkIn?: string;       // ISO datetime string
+  checkInTime?: string;   // Alias
+  checkOut?: string;      // ISO datetime string
+  checkOutTime?: string;  // Alias
+  workedHours?: number;
   workedMinutes?: number;
-  status: AttendanceStatus;
+  status: string;
   notes?: string;
+  hasMissingCheckOut?: boolean;
 }
 
-export interface AttendanceTodayState {
-  date: string;
+export interface TodayAttendanceStateDto {
   state: 'NOT_CHECKED_IN' | 'CHECKED_IN' | 'CHECKED_OUT';
+  date: string;
+  isWorkingDay: boolean;
+  canCheckIn: boolean;
+  canCheckOut: boolean;
+  attendance?: AttendanceDto | null;
+  // Legacy / convenience fields
   checkInTime?: string;
   checkOutTime?: string;
   workedMinutes?: number;
-  status?: AttendanceStatus;
+  status?: AttendanceStatus | string;
+}
+
+// Keep AttendanceTodayState alias for backwards compatibility
+export type AttendanceTodayState = TodayAttendanceStateDto;
+
+export interface AttendanceSummaryDto {
+  date: string;
+  totalEmployees: number;
+  presentCount: number;
+  lateCount: number;
+  halfDayCount: number;
+  onLeaveCount: number;
+  absentCount: number;
+  presentEmployees: AttendanceItemDto[];
+  lateEmployees: AttendanceItemDto[];
+  onLeaveEmployees: OnLeaveItemDto[];
+  absentEmployees: AbsentItemDto[];
+}
+
+export interface AttendanceItemDto {
+  employeeId: number;
+  employeeCode: string;
+  fullName: string;
+  departmentName: string;
+  checkIn: string;
+  checkOut?: string;
+  status: string;
+  workedHours?: number;
+}
+
+export interface OnLeaveItemDto {
+  employeeId: number;
+  employeeCode: string;
+  fullName: string;
+  departmentName: string;
+  leaveType: string;
+  startDate: string;
+  endDate: string;
+}
+
+export interface AbsentItemDto {
+  employeeId: number;
+  employeeCode: string;
+  fullName: string;
+  departmentName: string;
 }
 
 export interface AttendanceSummary {
