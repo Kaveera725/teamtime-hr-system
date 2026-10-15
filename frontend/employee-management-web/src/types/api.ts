@@ -2,7 +2,15 @@
 // TypeScript DTOs matching the backend API contracts
 // ============================================================
 
-export type Role = 'Admin' | 'Manager' | 'Employee';
+export type Role = 'Admin' | 'Manager' | 'Employee' | 'ADMIN' | 'MANAGER' | 'EMPLOYEE';
+
+export interface UserSummaryDto {
+  id: number;
+  email: string;
+  role: string;
+  employeeId?: number | null;
+  fullName?: string | null;
+}
 
 // ── Auth ──────────────────────────────────────────────────
 export interface LoginRequest {
@@ -12,11 +20,13 @@ export interface LoginRequest {
 
 export interface LoginResponse {
   token: string;
-  employeeId: string;
-  name: string;
-  email: string;
-  role: Role;
-  departmentId: string | null;
+  expiresAt?: string;
+  user?: UserSummaryDto;
+  employeeId?: string;
+  name?: string;
+  email?: string;
+  role?: Role;
+  departmentId?: string | null;
 }
 
 // ── Employee ──────────────────────────────────────────────

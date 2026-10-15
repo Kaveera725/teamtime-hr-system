@@ -49,6 +49,13 @@ function getInitialUser(): AuthUser | null {
   return null;
 }
 
+function normalizeRole(role: string): Role {
+  const upper = (role || '').toUpperCase();
+  if (upper === 'ADMIN') return 'Admin';
+  if (upper === 'MANAGER') return 'Manager';
+  return 'Employee';
+}
+
 // ── Provider ──────────────────────────────────────────────
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(getInitialUser);
@@ -69,13 +76,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(async (req: LoginRequest) => {
     const { data } = await api.post<LoginResponse>('/auth/login', req);
+    const employeeId = data.user?.employeeId
+      ? String(data.user.employeeId)
+      : data.employeeId
+      ? String(data.employeeId)
+      : String(data.user?.id ?? '');
+    const name = data.user?.fullName || data.name || data.user?.email || req.email.split('@')[0];
+    const email = data.user?.email || data.email || req.email;
+    const role = normalizeRole(data.user?.role || (data.role as string) || 'Employee');
+    const departmentId = data.departmentId ?? null;
+
     const u: AuthUser = {
-      employeeId:   data.employeeId,
-      name:         data.name,
-      email:        data.email,
-      role:         data.role,
-      departmentId: data.departmentId,
-      token:        data.token,
+      employeeId,
+      name,
+      email,
+      role,
+      departmentId,
+      token: data.token,
     };
     localStorage.setItem(STORAGE_TOKEN, data.token);
     localStorage.setItem(STORAGE_USER, JSON.stringify(u));
