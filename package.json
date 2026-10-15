@@ -1,0 +1,17 @@
+{
+  "name": "teamtime-hr-system",
+  "version": "1.0.0",
+  "description": "Employee Leave and Attendance Management System",
+  "scripts": {
+    "dev": "powershell -ExecutionPolicy Bypass -File ./start-dev.ps1",
+    "start": "powershell -ExecutionPolicy Bypass -File ./start-dev.ps1",
+    "docker:up": "docker compose up --build",
+    "docker:down": "docker compose down",
+    "seed": "dotnet run --project backend/EmployeeManagement.API -- seed-demo",
+    "frontend": "cd frontend/employee-management-web && npm run dev",
+    "backend": "dotnet run --project backend/EmployeeManagement.API"
+  },
+  "keywords": ["hr", "attendance", "leave-management", "react", "dotnet", "postgres"],
+  "author": "",
+  "license": "ISC"
+}

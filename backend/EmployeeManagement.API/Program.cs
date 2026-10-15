@@ -231,8 +231,23 @@ try
     app.MapControllers();
     app.MapHealthChecks("/health");
 
+    // Automatically apply pending EF Core migrations on startup (outside test environments)
+    if (!app.Environment.IsEnvironment("Testing"))
+    {
+        try
+        {
+            using var scope = app.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            await db.Database.MigrateAsync();
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "An error occurred while applying database migrations.");
+            throw;
+        }
+    }
+
     // Seed the first administrator if none exists (Section 7.10, 9).
-    // Requires the database tables, so migrations must be applied first.
     try
     {
         await DbSeeder.SeedAdminAsync(app.Services, app.Configuration);
