@@ -72,22 +72,25 @@ try
                 _ => new FixedWindowRateLimiterOptions
                 {
                     Window = TimeSpan.FromMinutes(1),
-                    PermitLimit = 10,
+                    PermitLimit = builder.Environment.IsEnvironment("Testing") ? 10000 : 10,
                     QueueLimit = 0
                 }));
     });
 
-    // JWT settings: no hard-coded fallbacks. The app refuses to start if they are missing.
+    // JWT settings: no hard-coded fallbacks in production. Testing environment provides test defaults.
     var jwtKey = builder.Configuration["Jwt:Key"]
-        ?? throw new InvalidOperationException(
-            "Jwt:Key is not configured. Set it with: dotnet user-secrets set \"Jwt:Key\" \"<32+ characters>\"");
+        ?? (builder.Environment.IsEnvironment("Testing")
+            ? "PBfS9OwUO+etMDI8mmtJYxx/uRHwIv2n7ak5L1KoCPsKdRfHCvWJSQmGFSYirwL4"
+            : throw new InvalidOperationException(
+                "Jwt:Key is not configured. Set it with: dotnet user-secrets set \"Jwt:Key\" \"<32+ characters>\""));
     if (jwtKey.Length < 32)
         throw new InvalidOperationException("Jwt:Key must be at least 32 characters long.");
 
     var jwtIssuer = builder.Configuration["Jwt:Issuer"]
-        ?? throw new InvalidOperationException("Jwt:Issuer is not configured.");
+        ?? (builder.Environment.IsEnvironment("Testing") ? "EmployeeManagement" : throw new InvalidOperationException("Jwt:Issuer is not configured."));
     var jwtAudience = builder.Configuration["Jwt:Audience"]
-        ?? throw new InvalidOperationException("Jwt:Audience is not configured.");
+        ?? (builder.Environment.IsEnvironment("Testing") ? "EmployeeManagementUsers" : throw new InvalidOperationException("Jwt:Audience is not configured."));
+
 
     builder.Services.AddAuthentication(options =>
     {
@@ -263,8 +266,11 @@ try
 catch (Exception ex) when (ex is not HostAbortedException)
 {
     Log.Fatal(ex, "Application terminated unexpectedly");
+    throw;
 }
 finally
 {
     Log.CloseAndFlush();
 }
+
+public partial class Program { }

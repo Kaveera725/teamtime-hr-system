@@ -92,4 +92,17 @@ public static class AttendanceRuleEvaluator
 
         return DefaultLateThreshold;
     }
+
+    /// <summary>
+    /// Evaluates whether an employee is marked ABSENT on a date (BR-13).
+    /// A working day with no attendance record and no approved leave is reported as ABSENT.
+    /// </summary>
+    /// <param name="isWorkingDay">True if the date is a working day (Mon-Fri).</param>
+    /// <param name="hasAttendanceRecord">True if the employee has checked in on this date.</param>
+    /// <param name="hasApprovedLeave">True if the employee has an approved leave request covering this date.</param>
+    public static bool IsAbsent(bool isWorkingDay, bool hasAttendanceRecord, bool hasApprovedLeave)
+    {
+        return isWorkingDay && !hasAttendanceRecord && !hasApprovedLeave;
+    }
 }
+

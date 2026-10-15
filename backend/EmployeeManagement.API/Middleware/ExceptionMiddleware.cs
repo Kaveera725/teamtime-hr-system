@@ -42,6 +42,18 @@ public class ExceptionMiddleware
 
         switch (exception)
         {
+            case UnauthorizedException unauthorizedEx:
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                problemDetails = new ProblemDetails
+                {
+                    Status = StatusCodes.Status401Unauthorized,
+                    Title = "Unauthorized",
+                    Detail = unauthorizedEx.Message,
+                    Instance = context.Request.Path
+                };
+                _logger.LogWarning("Unauthorized access attempt at {Path}: {Message}", context.Request.Path, unauthorizedEx.Message);
+                break;
+
             case BusinessRuleException businessRuleEx:
                 context.Response.StatusCode = StatusCodes.Status400BadRequest;
                 var validationProblem = new HttpValidationProblemDetails(

@@ -114,7 +114,7 @@ public class AuthServiceTests
         var service = new AuthService(context, _configuration, _logger);
 
         // Act & Assert
-        var ex = await Assert.ThrowsAsync<BusinessRuleException>(() =>
+        var ex = await Assert.ThrowsAsync<UnauthorizedException>(() =>
             service.LoginAsync(new LoginRequestDto
             {
                 Email = "test@company.com",
@@ -125,7 +125,7 @@ public class AuthServiceTests
     }
 
     [Fact]
-    public async Task FR_AUTH_05_Login_With_Inactive_Employee_Throws_BusinessRuleException()
+    public async Task FR_AUTH_05_Login_With_Inactive_Employee_Throws_UnauthorizedException()
     {
         // Arrange
         using var context = CreateInMemoryDbContext();
@@ -162,7 +162,7 @@ public class AuthServiceTests
         var service = new AuthService(context, _configuration, _logger);
 
         // Act & Assert
-        var ex = await Assert.ThrowsAsync<BusinessRuleException>(() =>
+        var ex = await Assert.ThrowsAsync<UnauthorizedException>(() =>
             service.LoginAsync(new LoginRequestDto
             {
                 Email = "inactive@company.com",

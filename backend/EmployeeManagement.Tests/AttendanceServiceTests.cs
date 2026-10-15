@@ -65,7 +65,7 @@ public class AttendanceServiceTests
 
         var service = new AttendanceService(context, _configuration, _logger);
         // Wednesday at 08:45 AM (Working day, on time)
-        var checkInTime = new DateTime(2026, 10, 14, 8, 45, 0, DateTimeKind.Local);
+        var checkInTime = new DateTime(2026, 10, 14, 8, 45, 0, DateTimeKind.Utc);
 
         var result = await service.CheckInAsync(user.Id, checkInTime: checkInTime);
 

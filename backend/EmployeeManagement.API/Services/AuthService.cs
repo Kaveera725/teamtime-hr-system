@@ -37,14 +37,14 @@ public class AuthService : IAuthService
         if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
         {
             _logger.LogWarning("Failed login attempt for email {Email}", request.Email);
-            throw new BusinessRuleException("Invalid email or password.", "password");
+            throw new UnauthorizedException("Invalid email or password.");
         }
 
         // BR / FR-AUTH-05: Deactivated accounts cannot log in
         if (user.Employee != null && user.Employee.Status == EmployeeStatus.INACTIVE)
         {
             _logger.LogWarning("Deactivated user {Email} attempted login", request.Email);
-            throw new BusinessRuleException("Your account is deactivated. Please contact an administrator.");
+            throw new UnauthorizedException("Your account is deactivated. Please contact an administrator.");
         }
 
         var (token, expiresAt) = GenerateJwtToken(user);

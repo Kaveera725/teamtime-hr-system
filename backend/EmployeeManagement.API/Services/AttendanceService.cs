@@ -65,14 +65,16 @@ public class AttendanceService : IAttendanceService
 
         // 4. Determine status using configured late threshold (BR-11)
         var lateThreshold = AttendanceRuleEvaluator.ParseLateThreshold(_configuration["Attendance:LateAfter"]);
-        var localTime = TimeOnly.FromDateTime(effectiveTime.Kind == DateTimeKind.Utc ? effectiveTime.ToLocalTime() : effectiveTime);
+        var localTime = checkInTime.HasValue
+            ? new TimeOnly(checkInTime.Value.Hour, checkInTime.Value.Minute)
+            : TimeOnly.FromDateTime(effectiveTime.ToLocalTime());
         var status = AttendanceRuleEvaluator.EvaluateCheckInStatus(localTime, lateThreshold);
 
         var attendance = new Attendance
         {
             EmployeeId = employee.Id,
             AttendanceDate = today,
-            CheckIn = effectiveTime,
+            CheckIn = effectiveTime.Kind == DateTimeKind.Utc ? effectiveTime : effectiveTime.ToUniversalTime(),
             CheckOut = null,
             Status = status,
             Notes = request?.Notes?.Trim(),
@@ -133,7 +135,7 @@ public class AttendanceService : IAttendanceService
         // Evaluate updated status (under 4 hours worked is HALF_DAY, BR-12)
         var finalStatus = AttendanceRuleEvaluator.EvaluateCheckOutStatus(attendance.CheckIn, effectiveTime, attendance.Status);
 
-        attendance.CheckOut = effectiveTime;
+        attendance.CheckOut = effectiveTime.Kind == DateTimeKind.Utc ? effectiveTime : effectiveTime.ToUniversalTime();
         attendance.Status = finalStatus;
 
         if (!string.IsNullOrWhiteSpace(request?.Notes))

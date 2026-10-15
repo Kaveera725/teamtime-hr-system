@@ -28,7 +28,7 @@ public class AttendanceController : ControllerBase
     public async Task<IActionResult> CheckIn([FromBody] CheckInRequestDto? request = null)
     {
         var userId = GetCurrentUserId();
-        var result = await _attendanceService.CheckInAsync(userId, request);
+        var result = await _attendanceService.CheckInAsync(userId, request, request?.CheckInTime);
         return StatusCode(StatusCodes.Status201Created, result);
     }
 
@@ -40,7 +40,7 @@ public class AttendanceController : ControllerBase
     public async Task<IActionResult> CheckOut([FromBody] CheckOutRequestDto? request = null)
     {
         var userId = GetCurrentUserId();
-        var result = await _attendanceService.CheckOutAsync(userId, request);
+        var result = await _attendanceService.CheckOutAsync(userId, request, request?.CheckOutTime);
         return Ok(result);
     }
 

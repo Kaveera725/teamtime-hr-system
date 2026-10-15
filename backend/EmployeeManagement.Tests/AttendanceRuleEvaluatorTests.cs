@@ -73,4 +73,16 @@ public class AttendanceRuleEvaluatorTests
         // Today record with no checkout (still open) -> false
         Assert.False(AttendanceRuleEvaluator.IsMissedCheckOut(today, null, today));
     }
+
+    [Theory]
+    [InlineData(true, false, false, true)]   // Working day, no check-in, no leave -> ABSENT (BR-13)
+    [InlineData(true, true, false, false)]   // Working day, with check-in -> NOT absent
+    [InlineData(true, false, true, false)]   // Working day, on approved leave -> NOT absent
+    [InlineData(false, false, false, false)] // Weekend/holiday -> NOT absent
+    public void IsAbsent_Returns_Expected_Result(bool isWorkingDay, bool hasAttendance, bool hasLeave, bool expected)
+    {
+        var result = AttendanceRuleEvaluator.IsAbsent(isWorkingDay, hasAttendance, hasLeave);
+        Assert.Equal(expected, result);
+    }
 }
+
