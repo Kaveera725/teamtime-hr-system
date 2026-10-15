@@ -1,0 +1,79 @@
+version: '3.8'
+
+services:
+  # ── PostgreSQL Database ──────────────────────────────────────
+  db:
+    image: postgres:16
+    container_name: teamtime_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-employee_management_hr}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres_password_dev}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - teamtime_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-postgres} -d $${POSTGRES_DB:-employee_management_hr}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    networks:
+      - teamtime_net
+
+  # ── Backend ASP.NET Core Web API ─────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: EmployeeManagement.API/Dockerfile
+    container_name: teamtime_backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5000
+      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=${POSTGRES_DB:-employee_management_hr};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-postgres_password_dev}
+      - Jwt__Key=${JWT_KEY:-PBfS9OwUO+etMDI8mmtJYxx/uRHwIv2n7ak5L1KoCPsKdRfHCvWJSQmGFSYirwL4}
+      - Jwt__Issuer=EmployeeManagement
+      - Jwt__Audience=EmployeeManagementUsers
+      - Cors__AllowedOrigins=http://localhost:3000,http://localhost:3001,http://localhost:5173,http://localhost:8080
+      - Seed__AdminEmail=admin@company.com
+      - Seed__AdminPassword=admin123
+      - Attendance__LateAfter=09:00
+    ports:
+      - "${BACKEND_PORT:-5076}:5000"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - teamtime_net
+
+  # ── Frontend Vite + React + Nginx ────────────────────────────
+  frontend:
+    build:
+      context: ./frontend/employee-management-web
+      dockerfile: Dockerfile
+    container_name: teamtime_frontend
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_started
+    ports:
+      - "${FRONTEND_PORT:-3001}:80"
+    networks:
+      - teamtime_net
+
+volumes:
+  teamtime_pgdata:
+    name: teamtime_pgdata
+
+networks:
+  teamtime_net:
+    name: teamtime_net

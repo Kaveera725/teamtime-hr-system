@@ -43,20 +43,42 @@ A full-stack enterprise HR application for employee leave and attendance managem
 
 ---
 
-## Getting Started (Local Development)
+## 🚀 Quick Start (Run Locally)
 
-### Prerequisites
+For complete instructions, refer to **[RUN_LOCALLY.md](file:///RUN_LOCALLY.md)**.
 
-- [.NET SDK 10](https://dotnet.microsoft.com/)
-- [Docker & Docker Compose](https://www.docker.com/)
-- [Node.js (LTS) & npm](https://nodejs.org/)
+### Option 1: Instant 1-Click Launch (Windows)
+Double-click [`start-dev.bat`](file:///start-dev.bat) or run in PowerShell:
+```powershell
+.\start-dev.ps1
+```
+*(Starts Database verification, Backend API on port 5076/5000, Frontend on port 3000/3001, and launches your browser)*
 
-### 1. Start the Local PostgreSQL Database
-
-Launch the dedicated local PostgreSQL 16 container:
-
+### Option 2: Docker Compose (All 3 in Containers)
 ```bash
-docker compose -f docker-compose.dev.yml up -d
+docker compose up --build
+```
+- **Frontend App:** [http://localhost:3001](http://localhost:3001)
+- **Backend Swagger:** [http://localhost:5076/swagger](http://localhost:5076/swagger)
+- **Health Check:** [http://localhost:5076/health](http://localhost:5076/health)
+
+### 🔑 Demo Login Accounts
+
+| Role | Email | Password |
+| :--- | :--- | :--- |
+| **Admin** | `admin@company.com` | `admin123` |
+| **Manager** | `manager@company.com` | `Password123!` |
+| **Employee** | `employee@company.com` | `Password123!` |
+
+---
+
+## 🛠️ Step-by-Step Manual Startup
+
+### 1. Start the PostgreSQL Database
+
+If using Docker:
+```bash
+docker compose up -d db
 ```
 
 Verify that the container is healthy:
