@@ -75,60 +75,91 @@ export interface DepartmentDto {
 
 // ── Leave Types ───────────────────────────────────────────
 export interface LeaveTypeDto {
-  id: string;
+  id: number | string;
   name: string;
-  description?: string;
+  description?: string | null;
   defaultDays: number;
-  requiresDocumentation: boolean;
+  requiresDocumentation?: boolean;
   isActive: boolean;
+  createdAt?: string;
 }
 
 // ── Leave Balance ─────────────────────────────────────────
 export interface LeaveBalanceDto {
-  id: string;
-  leaveTypeId: string;
+  id: number | string;
+  leaveTypeId: number | string;
   leaveTypeName: string;
   year: number;
-  allocated: number;
-  used: number;
-  pending: number;
-  remaining: number;
+  allocatedDays: number;
+  usedDays: number;
+  pendingDays: number;
+  remainingDays: number;
+  availableDays?: number;
+  // Legacy aliases
+  allocated?: number;
+  used?: number;
+  pending?: number;
+  remaining?: number;
 }
 
 // ── Leave Request ─────────────────────────────────────────
 export type LeaveStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED';
 
 export interface LeaveRequestDto {
-  id: string;
-  employeeId: string;
+  id: number;
+  employeeId: number;
+  employeeCode?: string;
   employeeName: string;
-  leaveTypeId: string;
+  departmentId?: number | null;
+  departmentName?: string | null;
+  leaveTypeId: number;
   leaveTypeName: string;
   startDate: string;
   endDate: string;
   totalDays: number;
-  reason: string;
+  reason?: string | null;
   status: LeaveStatus;
-  approvedById?: string;
-  approvedByName?: string;
-  rejectionReason?: string;
-  appliedAt: string;
+  approvedById?: number | null;
+  approvedByName?: string | null;
+  approvedAt?: string | null;
+  rejectionReason?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+  appliedAt?: string;
   processedAt?: string;
 }
 
-export interface CreateLeaveRequest {
-  leaveTypeId: string;
+export interface CreateLeaveRequestDto {
+  leaveTypeId: number;
   startDate: string;
   endDate: string;
-  reason: string;
-  halfDay?: boolean;
+  isHalfDay: boolean;
+  reason?: string | null;
 }
 
-export interface LeavePreviewResponse {
-  workingDays: number;
-  balanceAfter: number;
-  violations: string[];
+// Backwards compatibility alias
+export type CreateLeaveRequest = CreateLeaveRequestDto;
+
+export interface LeaveRequestPreviewRequestDto {
+  leaveTypeId: number;
+  startDate: string;
+  endDate: string;
+  isHalfDay: boolean;
 }
+
+export interface LeaveRequestPreviewResponseDto {
+  workingDays: number;
+  allocatedDays: number;
+  usedDays: number;
+  pendingDays: number;
+  availableBalance: number;
+  balanceAfter: number;
+  isValid: boolean;
+  validationErrors: string[];
+}
+
+// Backwards compatibility alias
+export type LeavePreviewResponse = LeaveRequestPreviewResponseDto;
 
 export interface ProcessLeaveRequest {
   rejectionReason?: string;
