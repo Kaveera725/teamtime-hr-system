@@ -75,60 +75,91 @@ export interface DepartmentDto {
 
 // ── Leave Types ───────────────────────────────────────────
 export interface LeaveTypeDto {
-  id: string;
+  id: number | string;
   name: string;
-  description?: string;
+  description?: string | null;
   defaultDays: number;
-  requiresDocumentation: boolean;
+  requiresDocumentation?: boolean;
   isActive: boolean;
+  createdAt?: string;
 }
 
 // ── Leave Balance ─────────────────────────────────────────
 export interface LeaveBalanceDto {
-  id: string;
-  leaveTypeId: string;
+  id: number | string;
+  leaveTypeId: number | string;
   leaveTypeName: string;
   year: number;
-  allocated: number;
-  used: number;
-  pending: number;
-  remaining: number;
+  allocatedDays: number;
+  usedDays: number;
+  pendingDays: number;
+  remainingDays: number;
+  availableDays?: number;
+  // Legacy aliases
+  allocated?: number;
+  used?: number;
+  pending?: number;
+  remaining?: number;
 }
 
 // ── Leave Request ─────────────────────────────────────────
 export type LeaveStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED';
 
 export interface LeaveRequestDto {
-  id: string;
-  employeeId: string;
+  id: number;
+  employeeId: number;
+  employeeCode?: string;
   employeeName: string;
-  leaveTypeId: string;
+  departmentId?: number | null;
+  departmentName?: string | null;
+  leaveTypeId: number;
   leaveTypeName: string;
   startDate: string;
   endDate: string;
   totalDays: number;
-  reason: string;
+  reason?: string | null;
   status: LeaveStatus;
-  approvedById?: string;
-  approvedByName?: string;
-  rejectionReason?: string;
-  appliedAt: string;
+  approvedById?: number | null;
+  approvedByName?: string | null;
+  approvedAt?: string | null;
+  rejectionReason?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+  appliedAt?: string;
   processedAt?: string;
 }
 
-export interface CreateLeaveRequest {
-  leaveTypeId: string;
+export interface CreateLeaveRequestDto {
+  leaveTypeId: number;
   startDate: string;
   endDate: string;
-  reason: string;
-  halfDay?: boolean;
+  isHalfDay: boolean;
+  reason?: string | null;
 }
 
-export interface LeavePreviewResponse {
-  workingDays: number;
-  balanceAfter: number;
-  violations: string[];
+// Backwards compatibility alias
+export type CreateLeaveRequest = CreateLeaveRequestDto;
+
+export interface LeaveRequestPreviewRequestDto {
+  leaveTypeId: number;
+  startDate: string;
+  endDate: string;
+  isHalfDay: boolean;
 }
+
+export interface LeaveRequestPreviewResponseDto {
+  workingDays: number;
+  allocatedDays: number;
+  usedDays: number;
+  pendingDays: number;
+  availableBalance: number;
+  balanceAfter: number;
+  isValid: boolean;
+  validationErrors: string[];
+}
+
+// Backwards compatibility alias
+export type LeavePreviewResponse = LeaveRequestPreviewResponseDto;
 
 export interface ProcessLeaveRequest {
   rejectionReason?: string;
@@ -145,27 +176,84 @@ export interface LeaveListParams {
 }
 
 // ── Attendance ────────────────────────────────────────────
-export type AttendanceStatus = 'PRESENT' | 'LATE' | 'HALF_DAY' | 'ABSENT';
+export type AttendanceStatus = 'PRESENT' | 'LATE' | 'HALF_DAY' | 'ABSENT' | 'ON_LEAVE' | 'WEEKEND';
 
 export interface AttendanceDto {
-  id: string;
-  employeeId: string;
+  id: string | number;
+  employeeId: string | number;
   employeeName: string;
-  date: string;
-  checkInTime?: string;
-  checkOutTime?: string;
+  employeeCode?: string;
+  departmentName?: string;
+  attendanceDate: string; // ISO date YYYY-MM-DD
+  date?: string;          // Alias for convenience
+  checkIn?: string;       // ISO datetime string
+  checkInTime?: string;   // Alias
+  checkOut?: string;      // ISO datetime string
+  checkOutTime?: string;  // Alias
+  workedHours?: number;
   workedMinutes?: number;
-  status: AttendanceStatus;
+  status: string;
   notes?: string;
+  hasMissingCheckOut?: boolean;
 }
 
-export interface AttendanceTodayState {
-  date: string;
+export interface TodayAttendanceStateDto {
   state: 'NOT_CHECKED_IN' | 'CHECKED_IN' | 'CHECKED_OUT';
+  date: string;
+  isWorkingDay: boolean;
+  canCheckIn: boolean;
+  canCheckOut: boolean;
+  attendance?: AttendanceDto | null;
+  // Legacy / convenience fields
   checkInTime?: string;
   checkOutTime?: string;
   workedMinutes?: number;
-  status?: AttendanceStatus;
+  status?: AttendanceStatus | string;
+}
+
+// Keep AttendanceTodayState alias for backwards compatibility
+export type AttendanceTodayState = TodayAttendanceStateDto;
+
+export interface AttendanceSummaryDto {
+  date: string;
+  totalEmployees: number;
+  presentCount: number;
+  lateCount: number;
+  halfDayCount: number;
+  onLeaveCount: number;
+  absentCount: number;
+  presentEmployees: AttendanceItemDto[];
+  lateEmployees: AttendanceItemDto[];
+  onLeaveEmployees: OnLeaveItemDto[];
+  absentEmployees: AbsentItemDto[];
+}
+
+export interface AttendanceItemDto {
+  employeeId: number;
+  employeeCode: string;
+  fullName: string;
+  departmentName: string;
+  checkIn: string;
+  checkOut?: string;
+  status: string;
+  workedHours?: number;
+}
+
+export interface OnLeaveItemDto {
+  employeeId: number;
+  employeeCode: string;
+  fullName: string;
+  departmentName: string;
+  leaveType: string;
+  startDate: string;
+  endDate: string;
+}
+
+export interface AbsentItemDto {
+  employeeId: number;
+  employeeCode: string;
+  fullName: string;
+  departmentName: string;
 }
 
 export interface AttendanceSummary {

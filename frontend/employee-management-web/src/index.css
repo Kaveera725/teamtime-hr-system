@@ -282,6 +282,8 @@
   .badge-late      { background: var(--warning-50); color: var(--warning-700); }
   .badge-half_day  { background: var(--info-50); color: var(--info-700); }
   .badge-absent    { background: var(--danger-50); color: var(--danger-700); }
+  .badge-on_leave  { background: rgb(139 92 246 / 0.12); color: #7c3aed; }
+  .badge-weekend   { background: var(--neutral-100); color: var(--neutral-600); }
 
   /* Leave statuses */
   .badge-pending   { background: var(--warning-50); color: var(--warning-700); }
@@ -293,6 +295,8 @@
   .dark .badge-late      { background: rgb(245 158 11 / 0.15); color: #fbbf24; }
   .dark .badge-half_day  { background: rgb(14 165 233 / 0.15); color: #38bdf8; }
   .dark .badge-absent    { background: rgb(244 63 94 / 0.15);  color: #fb7185; }
+  .dark .badge-on_leave  { background: rgb(139 92 246 / 0.2);  color: #c4b5fd; }
+  .dark .badge-weekend   { background: var(--neutral-800);      color: var(--neutral-400); }
   .dark .badge-pending   { background: rgb(245 158 11 / 0.15); color: #fbbf24; }
   .dark .badge-approved  { background: rgb(16 185 129 / 0.15); color: #34d399; }
   .dark .badge-rejected  { background: rgb(244 63 94 / 0.15);  color: #fb7185; }
