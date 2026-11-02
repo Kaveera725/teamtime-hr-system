@@ -11,6 +11,7 @@ import {
   ChevronRight,
   Palette,
   Briefcase,
+  ClipboardCheck,
   LucideIcon,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -26,6 +27,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard },
+  { label: 'Approvals', to: '/approvals', icon: ClipboardCheck, roles: ['Manager', 'Admin'] },
   { label: 'My Attendance', to: '/attendance', icon: Clock },
   { label: 'Leave Requests', to: '/leave', icon: Calendar },
   { label: 'Employees', to: '/employees', icon: Users, roles: ['Manager', 'Admin'] },

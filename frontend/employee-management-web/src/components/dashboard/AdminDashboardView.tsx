@@ -114,13 +114,15 @@ export const AdminDashboardView: React.FC<Props> = ({ data, isLoading }) => {
           accent="info"
           subtitle={`${att.absentCount} absent`}
         />
-        <StatCard
-          label="Pending Approvals"
-          value={data.pendingLeaveCount}
-          icon={Clock}
-          accent="warning"
-          subtitle={`${data.leaveDaysUsedThisMonth} days used this month`}
-        />
+        <Link to="/approvals" className="block hover:scale-[1.01] transition-transform">
+          <StatCard
+            label="Pending Approvals"
+            value={data.pendingLeaveCount}
+            icon={Clock}
+            accent="warning"
+            subtitle={`${data.leaveDaysUsedThisMonth} days used this month · Review inbox`}
+          />
+        </Link>
       </div>
 
       {/* Charts Row */}

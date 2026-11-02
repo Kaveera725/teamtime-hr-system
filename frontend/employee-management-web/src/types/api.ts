@@ -117,6 +117,7 @@ export interface LeaveRequestDto {
   startDate: string;
   endDate: string;
   totalDays: number;
+  remainingBalance?: number | null;
   reason?: string | null;
   status: LeaveStatus;
   approvedById?: number | null;

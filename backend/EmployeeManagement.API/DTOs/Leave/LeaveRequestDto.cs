@@ -13,6 +13,7 @@ public class LeaveRequestDto
     public DateOnly StartDate { get; set; }
     public DateOnly EndDate { get; set; }
     public decimal TotalDays { get; set; }
+    public decimal? RemainingBalance { get; set; }
     public string? Reason { get; set; }
     public string Status { get; set; } = string.Empty;
     public long? ApprovedById { get; set; }
