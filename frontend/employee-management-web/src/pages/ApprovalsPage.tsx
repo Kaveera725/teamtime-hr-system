@@ -9,6 +9,7 @@ import {
   CheckCircle2,
   XCircle,
   Clock,
+  AlertCircle,
 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -19,6 +20,7 @@ import { ApprovalCard } from '@/components/leave/ApprovalCard';
 import { RejectLeaveModal } from '@/components/leave/RejectLeaveModal';
 import { TeamLeaveCalendar } from '@/components/leave/TeamLeaveCalendar';
 import { useAuth } from '@/contexts/AuthContext';
+import { useDebounce } from '@/hooks/useDebounce';
 import { cn } from '@/lib/utils';
 import type {
   LeaveRequestDto,
@@ -41,6 +43,7 @@ export const ApprovalsPage: React.FC = () => {
 
   // Filters & Search
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearchQuery = useDebounce(searchQuery, 250);
   const [selectedLeaveTypeId, setSelectedLeaveTypeId] = useState<string>('ALL');
   const [selectedDepartmentId, setSelectedDepartmentId] = useState<string>('ALL');
   const [viewMode, setViewMode] = useState<'cards' | 'rows'>('cards');
@@ -80,6 +83,8 @@ export const ApprovalsPage: React.FC = () => {
     data: pagedData,
     isLoading,
     isFetching,
+    isError,
+    error,
     refetch: refetchRequests,
   } = useQuery<PagedResult<LeaveRequestDto>>({
     queryKey: [
@@ -164,8 +169,8 @@ export const ApprovalsPage: React.FC = () => {
         return false;
       }
       // Search query filter
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
+      if (debouncedSearchQuery.trim()) {
+        const q = debouncedSearchQuery.toLowerCase();
         const matchesName = req.employeeName.toLowerCase().includes(q);
         const matchesCode = (req.employeeCode || '').toLowerCase().includes(q);
         const matchesType = req.leaveTypeName.toLowerCase().includes(q);
@@ -174,7 +179,7 @@ export const ApprovalsPage: React.FC = () => {
       }
       return true;
     });
-  }, [rawItems, selectedLeaveTypeId, searchQuery]);
+  }, [rawItems, selectedLeaveTypeId, debouncedSearchQuery]);
 
   // Total pages
   const totalPages = pagedData?.totalPages ?? 1;
@@ -497,7 +502,29 @@ export const ApprovalsPage: React.FC = () => {
           </div>
 
           {/* Request Cards / Rows Content */}
-          {isLoading ? (
+          {isError && !isLoading ? (
+            <div className="card p-8 border-rose-200 dark:border-rose-900/40 bg-rose-50/50 dark:bg-rose-950/20 text-center space-y-4">
+              <div className="mx-auto w-12 h-12 rounded-full bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400 flex items-center justify-center">
+                <AlertCircle className="h-6 w-6" />
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-base font-semibold text-rose-950 dark:text-rose-200">
+                  Failed to load approval requests
+                </h3>
+                <p className="text-sm text-rose-700 dark:text-rose-400 max-w-md mx-auto">
+                  {getErrorMessage(error)}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => refetchRequests()}
+                className="btn btn-secondary btn-md inline-flex items-center gap-2"
+              >
+                <RefreshCw className="h-4 w-4" />
+                <span>Try Again</span>
+              </button>
+            </div>
+          ) : isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {[1, 2, 3, 4, 5, 6].map((i) => (
                 <div key={i} className="card p-5 animate-pulse space-y-4">

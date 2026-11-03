@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   X,
   Settings,
@@ -9,6 +9,7 @@ import {
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { api, getErrorMessage } from '@/lib/api';
+import { useDialogAccessibility } from '@/hooks/useDialogAccessibility';
 import { cn } from '@/lib/utils';
 import type {
   LeaveTypeDto,
@@ -37,6 +38,12 @@ export const LeaveTypeModal: React.FC<LeaveTypeModalProps> = ({
   const [defaultDays, setDefaultDays] = useState<number | ''>(14);
   const [isActive, setIsActive] = useState<boolean>(true);
   const [error, setError] = useState('');
+  const nameInputRef = useRef<HTMLInputElement>(null);
+
+  const dialogRef = useDialogAccessibility<HTMLDivElement>({
+    isOpen,
+    onClose,
+  });
 
   useEffect(() => {
     if (leaveTypeToEdit) {
@@ -93,19 +100,30 @@ export const LeaveTypeModal: React.FC<LeaveTypeModalProps> = ({
 
   const isSubmitting = createMutation.isPending || updateMutation.isPending;
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const validate = () => {
     const trimmedName = name.trim();
     if (!trimmedName) {
       setError('Leave type name is required.');
-      return;
+      nameInputRef.current?.focus();
+      return false;
     }
 
     const days = defaultDays === '' ? 0 : Number(defaultDays);
-    if (days < 0 || days > 365) {
+    if (isNaN(days) || days < 0 || days > 365) {
       setError('Default days must be between 0 and 365.');
-      return;
+      return false;
     }
+
+    setError('');
+    return true;
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validate()) return;
+
+    const trimmedName = name.trim();
+    const days = defaultDays === '' ? 0 : Number(defaultDays);
 
     if (isEditing) {
       const payload: UpdateLeaveTypeRequestDto = {
@@ -131,10 +149,17 @@ export const LeaveTypeModal: React.FC<LeaveTypeModalProps> = ({
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150"
-      role="dialog"
-      aria-modal="true"
+      onClick={(e) => {
+        if (e.target === e.currentTarget && !isSubmitting) onClose();
+      }}
     >
-      <div className="w-full max-w-lg card p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 animate-in zoom-in-95 duration-150">
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="leave-type-modal-title"
+        className="w-full max-w-lg card p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 animate-in zoom-in-95 duration-150"
+      >
         {/* Header */}
         <div className="flex items-start justify-between pb-4 border-b border-neutral-100 dark:border-neutral-800">
           <div className="flex items-center gap-3">
@@ -142,7 +167,7 @@ export const LeaveTypeModal: React.FC<LeaveTypeModalProps> = ({
               <Settings className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-neutral-900 dark:text-neutral-100">
+              <h3 id="leave-type-modal-title" className="text-base font-bold text-neutral-900 dark:text-neutral-100">
                 {isEditing ? `Edit Leave Type` : 'Add New Leave Type'}
               </h3>
               <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
@@ -156,6 +181,7 @@ export const LeaveTypeModal: React.FC<LeaveTypeModalProps> = ({
             type="button"
             onClick={onClose}
             disabled={isSubmitting}
+            aria-label="Close dialog"
             className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
           >
             <X className="h-5 w-5" />
@@ -163,27 +189,39 @@ export const LeaveTypeModal: React.FC<LeaveTypeModalProps> = ({
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="my-5 space-y-4">
+        <form onSubmit={handleSubmit} className="my-5 space-y-4" noValidate>
           {/* Name */}
           <div>
-            <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1.5">
+            <label htmlFor="leave-type-name" className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1.5">
               Leave Type Name <span className="text-rose-500">*</span>
             </label>
             <input
+              ref={nameInputRef}
+              id="leave-type-name"
               type="text"
               value={name}
               onChange={(e) => {
                 setName(e.target.value);
                 if (error) setError('');
               }}
+              onBlur={() => {
+                if (!name.trim()) setError('Leave type name is required.');
+              }}
               placeholder="e.g. Annual Leave, Casual Leave, Study Leave..."
               disabled={isSubmitting}
+              aria-required="true"
+              aria-invalid={Boolean(error)}
+              aria-describedby={error ? 'leave-type-error' : undefined}
               className={cn(
                 'input input-md text-xs sm:text-sm w-full',
                 error && 'border-rose-500 focus:ring-rose-500/20'
               )}
             />
-            {error && <span className="text-[11px] text-rose-500 mt-1 block">{error}</span>}
+            {error && (
+              <span id="leave-type-error" role="alert" className="text-[11px] text-rose-500 mt-1 block">
+                {error}
+              </span>
+            )}
           </div>
 
           {/* Default Days */}

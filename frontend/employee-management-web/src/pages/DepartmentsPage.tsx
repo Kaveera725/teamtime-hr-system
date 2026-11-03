@@ -17,11 +17,13 @@ import { CardSkeleton } from '@/components/ui/Skeleton';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Avatar } from '@/components/ui/Avatar';
 import { DepartmentModal } from '@/components/departments/DepartmentModal';
+import { useDebounce } from '@/hooks/useDebounce';
 import { cn } from '@/lib/utils';
 import type { DepartmentDto } from '@/types/api';
 
 export const DepartmentsPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, 250);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [departmentToEdit, setDepartmentToEdit] = useState<DepartmentDto | null>(null);
 
@@ -43,15 +45,15 @@ export const DepartmentsPage: React.FC = () => {
 
   // Filter departments by search query
   const filteredDepartments = useMemo(() => {
-    if (!searchTerm.trim()) return departments;
-    const q = searchTerm.toLowerCase();
+    if (!debouncedSearchTerm.trim()) return departments;
+    const q = debouncedSearchTerm.toLowerCase();
     return departments.filter(
       (d) =>
         d.name.toLowerCase().includes(q) ||
         (d.description || '').toLowerCase().includes(q) ||
         (d.managerName || '').toLowerCase().includes(q)
     );
-  }, [departments, searchTerm]);
+  }, [departments, debouncedSearchTerm]);
 
   const handleOpenAdd = () => {
     setDepartmentToEdit(null);

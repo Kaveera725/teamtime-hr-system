@@ -86,3 +86,8 @@ export function formatWaitingTime(date: string | Date | undefined | null): strin
   if (diffDays === 1) return '1 day ago';
   return `${diffDays} days ago`;
 }
+
+/** Standardized locale number formatting */
+export function formatNumber(val: number, options?: Intl.NumberFormatOptions): string {
+  return new Intl.NumberFormat('en-US', options).format(val);
+}

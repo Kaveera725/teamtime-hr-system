@@ -36,12 +36,22 @@ export const FormField: React.FC<FormFieldProps> = ({
       <div>{children}</div>
 
       {hint && !error && (
-        <p className="text-xs text-neutral-500 dark:text-neutral-400">{hint}</p>
+        <p
+          id={htmlFor ? `${htmlFor}-hint` : undefined}
+          className="text-xs text-neutral-500 dark:text-neutral-400"
+        >
+          {hint}
+        </p>
       )}
 
       {error && (
-        <div className="flex items-center gap-1.5 text-xs text-rose-600 dark:text-rose-400">
-          <AlertCircle className="h-3.5 w-3.5 flex-shrink-0" />
+        <div
+          id={htmlFor ? `${htmlFor}-error` : undefined}
+          role="alert"
+          aria-live="polite"
+          className="flex items-center gap-1.5 text-xs text-rose-600 dark:text-rose-400"
+        >
+          <AlertCircle className="h-3.5 w-3.5 shrink-0" />
           <span>{error}</span>
         </div>
       )}

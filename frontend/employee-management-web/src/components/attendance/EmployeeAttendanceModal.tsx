@@ -9,6 +9,7 @@ import { api, getErrorMessage } from '@/lib/api';
 import { AttendanceBadge, MissingCheckOutBadge } from '@/components/ui/StatusBadge';
 import { formatTime } from '@/lib/utils';
 import { toast } from 'sonner';
+import { useDialogAccessibility } from '@/hooks/useDialogAccessibility';
 import type { AttendanceDto } from '@/types/api';
 
 interface EmployeeAttendanceModalProps {
@@ -30,6 +31,11 @@ export const EmployeeAttendanceModal: React.FC<EmployeeAttendanceModalProps> = (
   const [fromDate, setFromDate] = useState<string>(format(subDays(today, 30), 'yyyy-MM-dd'));
   const [toDate, setToDate] = useState<string>(format(today, 'yyyy-MM-dd'));
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
+
+  const dialogRef = useDialogAccessibility<HTMLDivElement>({
+    isOpen: true,
+    onClose,
+  });
 
   // Fetch target employee attendance history
   const { data: records = [], isLoading, error } = useQuery<AttendanceDto[]>({
@@ -104,8 +110,19 @@ export const EmployeeAttendanceModal: React.FC<EmployeeAttendanceModalProps> = (
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl w-full max-w-4xl max-h-[90vh] shadow-2xl flex flex-col overflow-hidden">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="emp-attendance-modal-title"
+        className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl w-full max-w-4xl max-h-[90vh] shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-150"
+      >
         {/* Modal Header */}
         <div className="p-5 sm:p-6 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -114,7 +131,7 @@ export const EmployeeAttendanceModal: React.FC<EmployeeAttendanceModalProps> = (
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-lg font-bold text-neutral-900 dark:text-neutral-50">
+                <h3 id="emp-attendance-modal-title" className="text-lg font-bold text-neutral-900 dark:text-neutral-50">
                   {employeeName}
                 </h3>
                 {employeeCode && (
@@ -131,6 +148,7 @@ export const EmployeeAttendanceModal: React.FC<EmployeeAttendanceModalProps> = (
 
           <button
             onClick={onClose}
+            aria-label="Close dialog"
             className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 transition-colors"
           >
             <X className="h-5 w-5" />
