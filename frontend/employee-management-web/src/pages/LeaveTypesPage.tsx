@@ -23,6 +23,7 @@ import { TableSkeleton } from '@/components/ui/Skeleton';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { LeaveTypeModal } from '@/components/leave-types/LeaveTypeModal';
 import { GenerateBalancesModal } from '@/components/leave-types/GenerateBalancesModal';
+import { useDebounce } from '@/hooks/useDebounce';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import type { LeaveTypeDto } from '@/types/api';
@@ -69,6 +70,7 @@ export const LeaveTypesPage: React.FC = () => {
   const queryClient = useQueryClient();
 
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, 250);
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'ACTIVE' | 'INACTIVE'>('ALL');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isGenerateModalOpen, setIsGenerateModalOpen] = useState(false);
@@ -133,15 +135,15 @@ export const LeaveTypesPage: React.FC = () => {
       if (statusFilter === 'ACTIVE' && !lt.isActive) return false;
       if (statusFilter === 'INACTIVE' && lt.isActive) return false;
 
-      if (searchTerm.trim()) {
-        const q = searchTerm.toLowerCase();
+      if (debouncedSearchTerm.trim()) {
+        const q = debouncedSearchTerm.toLowerCase();
         const matchesName = lt.name.toLowerCase().includes(q);
         const matchesDesc = (lt.description || '').toLowerCase().includes(q);
         if (!matchesName && !matchesDesc) return false;
       }
       return true;
     });
-  }, [leaveTypes, statusFilter, searchTerm]);
+  }, [leaveTypes, statusFilter, debouncedSearchTerm]);
 
   const activeCount = useMemo(() => leaveTypes.filter((lt) => lt.isActive).length, [leaveTypes]);
 

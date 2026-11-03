@@ -665,20 +665,26 @@ export const ProfilePage: React.FC = () => {
           </div>
 
           {passwordError && (
-            <div className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50 flex items-start gap-2.5 text-xs text-rose-700 dark:text-rose-300">
+            <div
+              id="password-form-error"
+              role="alert"
+              aria-live="polite"
+              className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50 flex items-start gap-2.5 text-xs text-rose-700 dark:text-rose-300"
+            >
               <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
               <span>{passwordError}</span>
             </div>
           )}
 
-          <form onSubmit={handlePasswordSubmit} className="space-y-5">
+          <form onSubmit={handlePasswordSubmit} className="space-y-5" aria-describedby={passwordError ? "password-form-error" : undefined}>
             {/* Current Password */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
+              <label htmlFor="current-password" className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
                 Current Password <span className="text-rose-500">*</span>
               </label>
               <div className="relative">
                 <input
+                  id="current-password"
                   type={showCurrentPassword ? 'text' : 'password'}
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
@@ -689,8 +695,8 @@ export const ProfilePage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
-                  tabIndex={-1}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded p-1"
+                  aria-label={showCurrentPassword ? "Hide current password" : "Show current password"}
                 >
                   {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
@@ -699,23 +705,25 @@ export const ProfilePage: React.FC = () => {
 
             {/* New Password */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
+              <label htmlFor="new-password" className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
                 New Password <span className="text-rose-500">*</span>
               </label>
               <div className="relative">
                 <input
+                  id="new-password"
                   type={showNewPassword ? 'text' : 'password'}
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   placeholder="Enter new strong password"
                   required
+                  aria-describedby="password-requirements"
                   className="input input-md pr-10 text-xs sm:text-sm"
                 />
                 <button
                   type="button"
                   onClick={() => setShowNewPassword(!showNewPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
-                  tabIndex={-1}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded p-1"
+                  aria-label={showNewPassword ? "Hide new password" : "Show new password"}
                 >
                   {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
@@ -723,7 +731,7 @@ export const ProfilePage: React.FC = () => {
 
               {/* Strength Meter Bar */}
               {newPassword && (
-                <div className="space-y-1.5 pt-1.5">
+                <div className="space-y-1.5 pt-1.5" aria-live="polite">
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-neutral-500 dark:text-neutral-400 text-[11px]">
                       Strength:
@@ -732,7 +740,14 @@ export const ProfilePage: React.FC = () => {
                       {strength.label}
                     </span>
                   </div>
-                  <div className="grid grid-cols-4 gap-1.5 h-1.5 w-full">
+                  <div
+                    className="grid grid-cols-4 gap-1.5 h-1.5 w-full"
+                    role="progressbar"
+                    aria-valuenow={strength.score}
+                    aria-valuemin={0}
+                    aria-valuemax={4}
+                    aria-label="Password strength"
+                  >
                     {[1, 2, 3, 4].map((step) => (
                       <div
                         key={step}
@@ -751,11 +766,12 @@ export const ProfilePage: React.FC = () => {
 
             {/* Confirm New Password */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
+              <label htmlFor="confirm-new-password" className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
                 Confirm New Password <span className="text-rose-500">*</span>
               </label>
               <div className="relative">
                 <input
+                  id="confirm-new-password"
                   type={showConfirmPassword ? 'text' : 'password'}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
@@ -766,8 +782,8 @@ export const ProfilePage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
-                  tabIndex={-1}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded p-1"
+                  aria-label={showConfirmPassword ? "Hide confirmed password" : "Show confirmed password"}
                 >
                   {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
@@ -775,7 +791,7 @@ export const ProfilePage: React.FC = () => {
             </div>
 
             {/* Rule Hints Checklist */}
-            <div className="p-4 rounded-xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-800 space-y-2">
+            <div id="password-requirements" className="p-4 rounded-xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-800 space-y-2">
               <span className="text-xs font-semibold text-neutral-800 dark:text-neutral-200 block">
                 Password Requirements:
               </span>

@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { X, AlertCircle } from 'lucide-react';
 import type { LeaveRequestDto } from '@/types/api';
 import { formatDate } from '@/lib/utils';
+import { useDialogAccessibility } from '@/hooks/useDialogAccessibility';
 
 interface RejectLeaveModalProps {
   isOpen: boolean;
@@ -20,6 +21,18 @@ export const RejectLeaveModal: React.FC<RejectLeaveModalProps> = ({
 }) => {
   const [reason, setReason] = useState('');
   const [error, setError] = useState('');
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const dialogRef = useDialogAccessibility<HTMLDivElement>({
+    isOpen,
+    onClose: () => {
+      if (!isLoading) {
+        setReason('');
+        setError('');
+        onClose();
+      }
+    },
+  });
 
   if (!isOpen || !request) return null;
 
@@ -28,6 +41,7 @@ export const RejectLeaveModal: React.FC<RejectLeaveModalProps> = ({
     const trimmed = reason.trim();
     if (!trimmed) {
       setError('A rejection reason is required so the employee understands the decision.');
+      textareaRef.current?.focus();
       return;
     }
     setError('');
@@ -44,11 +58,17 @@ export const RejectLeaveModal: React.FC<RejectLeaveModalProps> = ({
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="reject-dialog-title"
+      onClick={(e) => {
+        if (e.target === e.currentTarget && !isLoading) handleClose();
+      }}
     >
-      <div className="w-full max-w-lg card p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 animate-in zoom-in-95 duration-150">
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="reject-dialog-title"
+        className="w-full max-w-lg card p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 animate-in zoom-in-95 duration-150"
+      >
         {/* Header */}
         <div className="flex items-start justify-between pb-4 border-b border-neutral-100 dark:border-neutral-800">
           <div>
@@ -63,6 +83,7 @@ export const RejectLeaveModal: React.FC<RejectLeaveModalProps> = ({
             type="button"
             onClick={handleClose}
             disabled={isLoading}
+            aria-label="Close dialog"
             className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
           >
             <X className="h-5 w-5" />
@@ -95,6 +116,7 @@ export const RejectLeaveModal: React.FC<RejectLeaveModalProps> = ({
               Rejection Reason <span className="text-rose-500">*</span>
             </label>
             <textarea
+              ref={textareaRef}
               id="rejectionReason"
               rows={3}
               value={reason}
@@ -104,6 +126,9 @@ export const RejectLeaveModal: React.FC<RejectLeaveModalProps> = ({
               }}
               placeholder="e.g., Critical sprint release scheduled on these dates, insufficient team coverage, or please reschedule."
               disabled={isLoading}
+              aria-required="true"
+              aria-invalid={Boolean(error)}
+              aria-describedby={error ? 'rejection-reason-error' : undefined}
               className={`w-full rounded-lg border px-3 py-2 text-sm text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 bg-white dark:bg-neutral-800 focus:outline-hidden focus:ring-2 transition-all ${
                 error
                   ? 'border-rose-500 focus:ring-rose-500/20'
@@ -111,7 +136,7 @@ export const RejectLeaveModal: React.FC<RejectLeaveModalProps> = ({
               }`}
             />
             {error && (
-              <div className="flex items-center gap-1.5 mt-1.5 text-xs text-rose-600 dark:text-rose-400">
+              <div id="rejection-reason-error" role="alert" className="flex items-center gap-1.5 mt-1.5 text-xs text-rose-600 dark:text-rose-400">
                 <AlertCircle className="h-3.5 w-3.5 shrink-0" />
                 <span>{error}</span>
               </div>

@@ -14,6 +14,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { api, getErrorMessage } from '@/lib/api';
 import { LeaveDateRangePicker } from './LeaveDateRangePicker';
+import { useDialogAccessibility } from '@/hooks/useDialogAccessibility';
 import { cn } from '@/lib/utils';
 import type {
   LeaveTypeDto,
@@ -35,6 +36,11 @@ export const ApplyLeaveSheet: React.FC<ApplyLeaveSheetProps> = ({
   selectedYear,
 }) => {
   const queryClient = useQueryClient();
+
+  const dialogRef = useDialogAccessibility<HTMLDivElement>({
+    isOpen,
+    onClose,
+  });
 
   // Form states
   const [leaveTypeId, setLeaveTypeId] = useState<number | ''>('');
@@ -268,11 +274,17 @@ export const ApplyLeaveSheet: React.FC<ApplyLeaveSheetProps> = ({
     !applyMutation.isPending;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 overflow-hidden bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
       <div className="absolute inset-0" onClick={handleSheetClose} />
 
       <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
-        <div className="w-screen max-w-lg bg-white dark:bg-neutral-900 border-l border-neutral-200 dark:border-neutral-800 shadow-2xl flex flex-col justify-between animate-in slide-in-from-right duration-300">
+        <div
+          ref={dialogRef}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="apply-leave-title"
+          className="w-screen max-w-lg bg-white dark:bg-neutral-900 border-l border-neutral-200 dark:border-neutral-800 shadow-2xl flex flex-col justify-between animate-in slide-in-from-right duration-200"
+        >
           {/* Header */}
           <div className="p-6 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between bg-neutral-50/50 dark:bg-neutral-900/50">
             <div>
@@ -280,7 +292,7 @@ export const ApplyLeaveSheet: React.FC<ApplyLeaveSheetProps> = ({
                 <span className="p-1.5 rounded-lg bg-primary-100 dark:bg-primary-950/60 text-primary-600 dark:text-primary-400">
                   <Calendar className="h-5 w-5" />
                 </span>
-                <h2 className="text-lg font-bold text-neutral-900 dark:text-neutral-100">
+                <h2 id="apply-leave-title" className="text-lg font-bold text-neutral-900 dark:text-neutral-100">
                   Apply for Leave
                 </h2>
               </div>
@@ -290,6 +302,7 @@ export const ApplyLeaveSheet: React.FC<ApplyLeaveSheetProps> = ({
             </div>
             <button
               onClick={handleSheetClose}
+              aria-label="Close drawer"
               className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
             >
               <X className="h-5 w-5" />

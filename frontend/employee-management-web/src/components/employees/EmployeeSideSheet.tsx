@@ -15,6 +15,7 @@ import {
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { api, getErrorMessage } from '@/lib/api';
+import { useDialogAccessibility } from '@/hooks/useDialogAccessibility';
 import { cn } from '@/lib/utils';
 import type {
   EmployeeListDto,
@@ -39,6 +40,11 @@ export const EmployeeSideSheet: React.FC<EmployeeSideSheetProps> = ({
 }) => {
   const queryClient = useQueryClient();
   const isEditing = Boolean(employeeToEdit);
+
+  const dialogRef = useDialogAccessibility<HTMLDivElement>({
+    isOpen,
+    onClose,
+  });
 
   // 1. Form state - Account
   const [email, setEmail] = useState('');
@@ -152,7 +158,13 @@ export const EmployeeSideSheet: React.FC<EmployeeSideSheetProps> = ({
     }
 
     setErrors(errs);
-    return Object.keys(errs).length === 0;
+    if (Object.keys(errs).length > 0) {
+      const firstField = Object.keys(errs)[0];
+      const el = document.getElementById(`emp-${firstField}`);
+      el?.focus();
+      return false;
+    }
+    return true;
   };
 
   // Create Mutation
@@ -233,11 +245,17 @@ export const EmployeeSideSheet: React.FC<EmployeeSideSheetProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 overflow-hidden bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
       <div className="absolute inset-0" onClick={() => !isSubmitting && onClose()} />
 
       <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
-        <div className="w-screen max-w-xl bg-white dark:bg-neutral-900 border-l border-neutral-200 dark:border-neutral-800 shadow-2xl flex flex-col justify-between animate-in slide-in-from-right duration-300">
+        <div
+          ref={dialogRef}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="employee-sheet-title"
+          className="w-screen max-w-xl bg-white dark:bg-neutral-900 border-l border-neutral-200 dark:border-neutral-800 shadow-2xl flex flex-col justify-between animate-in slide-in-from-right duration-200"
+        >
           {/* Header */}
           <div className="p-6 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between bg-neutral-50/60 dark:bg-neutral-900/60">
             <div className="flex items-center gap-3">
@@ -245,7 +263,7 @@ export const EmployeeSideSheet: React.FC<EmployeeSideSheetProps> = ({
                 <User className="h-5 w-5" />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-neutral-900 dark:text-neutral-100">
+                <h2 id="employee-sheet-title" className="text-lg font-bold text-neutral-900 dark:text-neutral-100">
                   {isEditing ? `Edit Employee: ${employeeToEdit?.fullName}` : 'Add New Employee'}
                 </h2>
                 <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
@@ -259,6 +277,7 @@ export const EmployeeSideSheet: React.FC<EmployeeSideSheetProps> = ({
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
+              aria-label="Close drawer"
               className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
             >
               <X className="h-5 w-5" />

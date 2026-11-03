@@ -26,6 +26,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { EmployeeSideSheet } from '@/components/employees/EmployeeSideSheet';
 import { EmployeeDetailDrawer } from '@/components/employees/EmployeeDetailDrawer';
+import { useDebounce } from '@/hooks/useDebounce';
 import { formatDate, cn } from '@/lib/utils';
 import type {
   EmployeeListDto,
@@ -39,6 +40,7 @@ export const EmployeesPage: React.FC = () => {
 
   // Search & Filters
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const [selectedDepartmentId, setSelectedDepartmentId] = useState<string>('ALL');
   const [selectedStatus, setSelectedStatus] = useState<string>('ALL');
 
@@ -83,7 +85,7 @@ export const EmployeesPage: React.FC = () => {
   } = useQuery<PagedResult<EmployeeListDto>>({
     queryKey: [
       'employees',
-      searchTerm,
+      debouncedSearchTerm,
       selectedDepartmentId,
       selectedStatus,
       sortBy,
@@ -98,8 +100,8 @@ export const EmployeesPage: React.FC = () => {
         sortBy,
         sortOrder,
       };
-      if (searchTerm.trim()) {
-        params.search = searchTerm.trim();
+      if (debouncedSearchTerm.trim()) {
+        params.search = debouncedSearchTerm.trim();
       }
       if (selectedDepartmentId !== 'ALL') {
         params.departmentId = Number(selectedDepartmentId);

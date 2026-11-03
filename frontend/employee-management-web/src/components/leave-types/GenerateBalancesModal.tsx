@@ -12,6 +12,7 @@ import {
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { api, getErrorMessage } from '@/lib/api';
+import { useDialogAccessibility } from '@/hooks/useDialogAccessibility';
 import type { GenerateLeaveBalancesResultDto } from '@/types/api';
 
 interface GenerateBalancesModalProps {
@@ -29,6 +30,16 @@ export const GenerateBalancesModal: React.FC<GenerateBalancesModalProps> = ({
 
   const [selectedYear, setSelectedYear] = useState<number>(nextYear);
   const [result, setResult] = useState<GenerateLeaveBalancesResultDto | null>(null);
+
+  const dialogRef = useDialogAccessibility<HTMLDivElement>({
+    isOpen,
+    onClose: () => {
+      if (!generateMutation.isPending) {
+        setResult(null);
+        onClose();
+      }
+    },
+  });
 
   // Generate mutation
   const generateMutation = useMutation({
@@ -67,10 +78,17 @@ export const GenerateBalancesModal: React.FC<GenerateBalancesModalProps> = ({
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150"
-      role="dialog"
-      aria-modal="true"
+      onClick={(e) => {
+        if (e.target === e.currentTarget && !generateMutation.isPending) handleClose();
+      }}
     >
-      <div className="w-full max-w-lg card p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 animate-in zoom-in-95 duration-150">
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="gen-balances-title"
+        className="w-full max-w-lg card p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 animate-in zoom-in-95 duration-150"
+      >
         {/* Header */}
         <div className="flex items-start justify-between pb-4 border-b border-neutral-100 dark:border-neutral-800">
           <div className="flex items-center gap-3">
@@ -92,6 +110,7 @@ export const GenerateBalancesModal: React.FC<GenerateBalancesModalProps> = ({
             type="button"
             onClick={handleClose}
             disabled={generateMutation.isPending}
+            aria-label="Close dialog"
             className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
           >
             <X className="h-5 w-5" />

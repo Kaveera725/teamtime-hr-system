@@ -35,7 +35,9 @@ const navItems: NavItem[] = [
   { label: 'Employees', to: '/employees', icon: Users, roles: ['Manager', 'Admin'] },
   { label: 'Departments', to: '/departments', icon: Building2, roles: ['Admin'] },
   { label: 'Leave Types', to: '/leave-types', icon: Settings, roles: ['Admin'] },
-  { label: 'Design System', to: '/design', icon: Palette },
+  ...(import.meta.env.DEV
+    ? [{ label: 'Design System', to: '/design', icon: Palette }]
+    : []),
 ];
 
 interface SidebarProps {

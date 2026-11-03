@@ -15,6 +15,7 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { Avatar } from '@/components/ui/Avatar';
 import { formatDate } from '@/lib/utils';
+import { useDialogAccessibility } from '@/hooks/useDialogAccessibility';
 import type { EmployeeDetailDto, EmployeeListDto } from '@/types/api';
 
 interface EmployeeDetailDrawerProps {
@@ -30,6 +31,11 @@ export const EmployeeDetailDrawer: React.FC<EmployeeDetailDrawerProps> = ({
   employee,
   onEdit,
 }) => {
+  const dialogRef = useDialogAccessibility<HTMLDivElement>({
+    isOpen,
+    onClose,
+  });
+
   const { data: detail } = useQuery<EmployeeDetailDto>({
     queryKey: ['employeeDetail', employee?.id],
     queryFn: async () => {
@@ -49,15 +55,22 @@ export const EmployeeDetailDrawer: React.FC<EmployeeDetailDrawerProps> = ({
       <div className="absolute inset-0" onClick={onClose} />
 
       <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
-        <div className="w-screen max-w-md bg-white dark:bg-neutral-900 border-l border-neutral-200 dark:border-neutral-800 shadow-2xl flex flex-col justify-between animate-in slide-in-from-right duration-300">
+        <div
+          ref={dialogRef}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="employee-drawer-title"
+          className="w-screen max-w-md bg-white dark:bg-neutral-900 border-l border-neutral-200 dark:border-neutral-800 shadow-2xl flex flex-col justify-between animate-in slide-in-from-right duration-200"
+        >
           {/* Header */}
           <div className="p-6 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between bg-neutral-50/60 dark:bg-neutral-900/60">
-            <h2 className="text-base font-bold text-neutral-900 dark:text-neutral-100">
+            <h2 id="employee-drawer-title" className="text-base font-bold text-neutral-900 dark:text-neutral-100">
               Employee Profile
             </h2>
             <button
               type="button"
               onClick={onClose}
+              aria-label="Close drawer"
               className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
             >
               <X className="h-5 w-5" />

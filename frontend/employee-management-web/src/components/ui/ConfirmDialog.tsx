@@ -1,6 +1,7 @@
 import React, { ReactNode } from 'react';
-import { AlertTriangle, Info } from 'lucide-react';
+import { AlertTriangle, Info, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useDialogAccessibility } from '@/hooks/useDialogAccessibility';
 
 interface ConfirmDialogProps {
   isOpen: boolean;
@@ -27,20 +28,34 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   isLoading = false,
   children,
 }) => {
+  const dialogRef = useDialogAccessibility<HTMLDivElement>({
+    isOpen,
+    onClose,
+    closeOnEsc: !isLoading,
+  });
+
   if (!isOpen) return null;
 
   const btnVariants = {
-    danger: 'bg-rose-600 hover:bg-rose-700 text-white',
-    warning: 'bg-amber-600 hover:bg-amber-700 text-white',
-    primary: 'bg-primary-600 hover:bg-primary-700 text-white',
+    danger: 'bg-rose-600 hover:bg-rose-700 text-white focus-visible:ring-rose-500',
+    warning: 'bg-amber-600 hover:bg-amber-700 text-white focus-visible:ring-amber-500',
+    primary: 'bg-primary-600 hover:bg-primary-700 text-white focus-visible:ring-primary-500',
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150"
+      onClick={(e) => {
+        if (e.target === e.currentTarget && !isLoading) onClose();
+      }}
+    >
       <div
-        className="w-full max-w-md card p-6 shadow-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 animate-in zoom-in-95 duration-200"
-        role="dialog"
+        ref={dialogRef}
+        className="w-full max-w-md card p-6 shadow-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 animate-in zoom-in-95 duration-150"
+        role="alertdialog"
         aria-modal="true"
+        aria-labelledby="confirm-dialog-title"
+        aria-describedby="confirm-dialog-desc"
       >
         <div className="flex items-start gap-4">
           <div
@@ -58,10 +73,10 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
             )}
           </div>
           <div className="flex-1">
-            <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">
+            <h3 id="confirm-dialog-title" className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">
               {title}
             </h3>
-            <p className="mt-1.5 text-sm text-neutral-500 dark:text-neutral-400">
+            <p id="confirm-dialog-desc" className="mt-1.5 text-sm text-neutral-500 dark:text-neutral-400">
               {description}
             </p>
             {children && <div className="mt-4">{children}</div>}
@@ -79,11 +94,12 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
           </button>
           <button
             type="button"
-            className={cn('btn btn-md font-medium', btnVariants[variant])}
+            className={cn('btn btn-md font-medium inline-flex items-center gap-1.5', btnVariants[variant])}
             onClick={onConfirm}
             disabled={isLoading}
           >
-            {isLoading ? 'Processing...' : confirmText}
+            {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
+            <span>{isLoading ? 'Processing...' : confirmText}</span>
           </button>
         </div>
       </div>
