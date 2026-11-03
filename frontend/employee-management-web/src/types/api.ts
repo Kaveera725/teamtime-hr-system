@@ -30,8 +30,69 @@ export interface LoginResponse {
 }
 
 // ── Employee ──────────────────────────────────────────────
+export interface EmployeeListDto {
+  id: number;
+  employeeCode: string;
+  firstName: string;
+  lastName: string;
+  fullName: string;
+  email: string;
+  phone?: string | null;
+  departmentId: number;
+  departmentName: string;
+  position: string;
+  status: 'ACTIVE' | 'INACTIVE';
+  joinedDate: string;
+  createdAt: string;
+}
+
+export interface EmployeeDetailDto {
+  id: number;
+  userId: number;
+  employeeCode: string;
+  firstName: string;
+  lastName: string;
+  fullName: string;
+  email: string;
+  role: string;
+  phone?: string | null;
+  departmentId: number;
+  departmentName: string;
+  position: string;
+  status: 'ACTIVE' | 'INACTIVE';
+  joinedDate: string;
+  managedDepartmentId?: number | null;
+  managedDepartmentName?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateUserRequestDto {
+  email: string;
+  password: string;
+  role: 'ADMIN' | 'MANAGER' | 'EMPLOYEE';
+  firstName: string;
+  lastName: string;
+  employeeCode?: string;
+  departmentId: number;
+  position: string;
+  phone?: string;
+}
+
+export interface UpdateEmployeeRequestDto {
+  departmentId: number;
+  firstName: string;
+  lastName: string;
+  phone?: string | null;
+  position: string;
+  joinedDate?: string | null;
+  status?: 'ACTIVE' | 'INACTIVE';
+  role?: 'ADMIN' | 'MANAGER' | 'EMPLOYEE';
+}
+
+// Backwards compatibility alias
 export interface EmployeeDto {
-  id: string;
+  id: string | number;
   employeeNumber: string;
   name: string;
   email: string;
@@ -39,9 +100,9 @@ export interface EmployeeDto {
   role: Role;
   isActive: boolean;
   joinDate: string;
-  departmentId: string | null;
+  departmentId: string | number | null;
   departmentName: string | null;
-  managerId: string | null;
+  managerId: string | number | null;
   managerName: string | null;
 }
 
@@ -51,7 +112,7 @@ export interface CreateEmployeeRequest {
   password: string;
   position: string;
   role: Role;
-  departmentId?: string;
+  departmentId?: string | number;
   joinDate: string;
 }
 
@@ -59,29 +120,65 @@ export interface UpdateEmployeeRequest {
   name?: string;
   position?: string;
   role?: Role;
-  departmentId?: string;
+  departmentId?: string | number;
   isActive?: boolean;
 }
 
 // ── Department ────────────────────────────────────────────
 export interface DepartmentDto {
-  id: string;
+  id: number | string;
   name: string;
-  description?: string;
-  managerId?: string;
-  managerName?: string;
+  description?: string | null;
+  managerId?: number | string | null;
+  managerName?: string | null;
   employeeCount: number;
+  createdAt?: string;
+}
+
+export interface CreateDepartmentRequestDto {
+  name: string;
+  description?: string | null;
+  managerId?: number | null;
+}
+
+export interface UpdateDepartmentRequestDto {
+  name: string;
+  description?: string | null;
+  managerId?: number | null;
 }
 
 // ── Leave Types ───────────────────────────────────────────
 export interface LeaveTypeDto {
-  id: number | string;
+  id: number;
   name: string;
   description?: string | null;
   defaultDays: number;
   requiresDocumentation?: boolean;
   isActive: boolean;
   createdAt?: string;
+}
+
+export interface CreateLeaveTypeRequestDto {
+  name: string;
+  description?: string | null;
+  defaultDays: number;
+  isActive?: boolean;
+}
+
+export interface UpdateLeaveTypeRequestDto {
+  name: string;
+  description?: string | null;
+  defaultDays: number;
+  isActive?: boolean;
+}
+
+export interface GenerateLeaveBalancesResultDto {
+  year: number;
+  activeEmployeesCount: number;
+  activeLeaveTypesCount: number;
+  balancesCreatedCount: number;
+  balancesSkippedCount: number;
+  message: string;
 }
 
 // ── Leave Balance ─────────────────────────────────────────
