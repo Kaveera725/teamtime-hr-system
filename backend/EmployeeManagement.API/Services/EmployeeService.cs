@@ -370,6 +370,11 @@ public class EmployeeService : IEmployeeService
             }
         }
 
+        if (request.Role.HasValue)
+        {
+            employee.User.Role = request.Role.Value;
+        }
+
         employee.UpdatedAt = DateTime.UtcNow;
         await _dbContext.SaveChangesAsync();
 

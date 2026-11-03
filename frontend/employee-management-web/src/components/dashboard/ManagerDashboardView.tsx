@@ -228,7 +228,7 @@ export const ManagerDashboardView: React.FC<Props> = ({ data, isLoading }) => {
                 </span>
               )}
             </h2>
-            <Link to="/leave" className="text-xs text-primary-600 dark:text-primary-400 hover:underline flex items-center gap-1">
+            <Link to="/approvals" className="text-xs text-primary-600 dark:text-primary-400 hover:underline flex items-center gap-1">
               All <ChevronRight className="h-3.5 w-3.5" />
             </Link>
           </div>
@@ -245,7 +245,7 @@ export const ManagerDashboardView: React.FC<Props> = ({ data, isLoading }) => {
                 <ApprovalCard key={req.id} req={req} onDone={() => {}} />
               ))}
               {data.pendingApprovals.length > 5 && (
-                <Link to="/leave" className="flex items-center justify-center gap-1 text-xs text-primary-600 dark:text-primary-400 hover:underline py-2">
+                <Link to="/approvals" className="flex items-center justify-center gap-1 text-xs text-primary-600 dark:text-primary-400 hover:underline py-2">
                   View {data.pendingApprovals.length - 5} more pending
                   <ChevronRight className="h-3.5 w-3.5" />
                 </Link>

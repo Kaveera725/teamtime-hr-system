@@ -26,4 +26,6 @@ public class UpdateEmployeeRequestDto
     public DateOnly? JoinedDate { get; set; }
 
     public EmployeeStatus? Status { get; set; }
+
+    public UserRole? Role { get; set; }
 }

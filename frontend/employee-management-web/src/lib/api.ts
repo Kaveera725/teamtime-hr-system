@@ -68,9 +68,14 @@ export function getErrorMessage(error: unknown): string {
       return data?.detail || 'A conflict occurred with the current state of the resource.';
     }
 
+    // 502/503/504 Bad Gateway or Proxy Connection Refused
+    if (status === 502 || status === 503 || status === 504) {
+      return 'Unable to reach the backend API server. Please verify the backend is running on http://localhost:5076.';
+    }
+
     // 500+ Server Error
     if (status && status >= 500) {
-      return 'An internal server error occurred. Please try again later.';
+      return data?.detail || 'An internal server error occurred. Please try again later.';
     }
 
     // Backend validation ProblemDetails errors dictionary

@@ -60,7 +60,7 @@ Write-Host "  Frontend Web will run on: http://localhost:$frontendPort" -Foregro
 
 # ── 3. Start Backend API ───────────────────────────────────────
 Write-Host "`n[3/4] Starting ASP.NET Core Backend API..." -ForegroundColor Yellow
-$backendCmd = "cd '$rootPath/backend/EmployeeManagement.API'; `$env:ASPNETCORE_URLS='http://localhost:$backendPort'; `$env:ASPNETCORE_ENVIRONMENT='Development'; Write-Host 'Starting Backend API on http://localhost:$backendPort...' -ForegroundColor Green; dotnet run"
+$backendCmd = "cd '$rootPath/backend/EmployeeManagement.API'; `$env:ASPNETCORE_URLS='http://localhost:$backendPort'; `$env:ASPNETCORE_ENVIRONMENT='Development'; Write-Host 'Starting Backend API on http://localhost:$backendPort...' -ForegroundColor Green; dotnet run --urls 'http://localhost:$backendPort'"
 
 Start-Process powershell -ArgumentList "-NoExit", "-Command", $backendCmd -WorkingDirectory "$rootPath"
 

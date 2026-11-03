@@ -318,6 +318,7 @@ public class LeaveService : ILeaveService
         var employee = await _dbContext.Employees
             .AsNoTracking()
             .Include(e => e.Department)
+            .Include(e => e.LeaveBalances)
             .FirstOrDefaultAsync(e => e.UserId == userId);
 
         if (employee == null)
@@ -370,12 +371,14 @@ public class LeaveService : ILeaveService
         }
 
         var page = Math.Max(1, query.Page);
-        var pageSize = Math.Clamp(query.PageSize, 1, 100);
+        var pageSize = Math.Clamp(query.PageSize, 1, 500);
 
         var dbQuery = _dbContext.LeaveRequests
             .AsNoTracking()
             .Include(lr => lr.Employee)
                 .ThenInclude(e => e.Department)
+            .Include(lr => lr.Employee)
+                .ThenInclude(e => e.LeaveBalances)
             .Include(lr => lr.LeaveType)
             .Include(lr => lr.ApprovedBy)
             .AsQueryable();
@@ -453,6 +456,8 @@ public class LeaveService : ILeaveService
             .AsNoTracking()
             .Include(lr => lr.Employee)
                 .ThenInclude(e => e.Department)
+            .Include(lr => lr.Employee)
+                .ThenInclude(e => e.LeaveBalances)
             .Include(lr => lr.LeaveType)
             .Include(lr => lr.ApprovedBy)
             .FirstOrDefaultAsync(lr => lr.Id == id);
@@ -749,6 +754,10 @@ public class LeaveService : ILeaveService
         LeaveType leaveType,
         Employee? approver)
     {
+        var balance = employee?.LeaveBalances?
+            .FirstOrDefault(b => b.LeaveTypeId == lr.LeaveTypeId && b.Year == lr.StartDate.Year);
+        decimal? remainingBalance = balance != null ? balance.RemainingDays : null;
+
         return new LeaveRequestDto
         {
             Id = lr.Id,
@@ -762,6 +771,7 @@ public class LeaveService : ILeaveService
             StartDate = lr.StartDate,
             EndDate = lr.EndDate,
             TotalDays = lr.TotalDays,
+            RemainingBalance = remainingBalance,
             Reason = lr.Reason,
             Status = lr.Status.ToString(),
             ApprovedById = lr.ApprovedById,

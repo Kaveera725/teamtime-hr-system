@@ -55,6 +55,20 @@ public class ExceptionMiddleware
                 break;
 
             case BusinessRuleException businessRuleEx:
+                if (businessRuleEx.Message.Contains("Only PENDING requests can be", StringComparison.OrdinalIgnoreCase))
+                {
+                    context.Response.StatusCode = StatusCodes.Status409Conflict;
+                    problemDetails = new ProblemDetails
+                    {
+                        Status = StatusCodes.Status409Conflict,
+                        Title = "Conflict",
+                        Detail = businessRuleEx.Message,
+                        Instance = context.Request.Path
+                    };
+                    _logger.LogWarning("Leave approval conflict at {Path}: {Message}", context.Request.Path, businessRuleEx.Message);
+                    break;
+                }
+
                 context.Response.StatusCode = StatusCodes.Status400BadRequest;
                 var validationProblem = new HttpValidationProblemDetails(
                     businessRuleEx.Errors.Count > 0

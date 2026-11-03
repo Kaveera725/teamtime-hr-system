@@ -68,3 +68,21 @@ export function avatarColor(name: string): string {
 export function clamp(val: number, min: number, max: number) {
   return Math.min(Math.max(val, min), max);
 }
+
+/** Human-friendly waiting duration for pending requests */
+export function formatWaitingTime(date: string | Date | undefined | null): string {
+  if (!date) return 'Recently';
+  const timestamp = new Date(date).getTime();
+  if (isNaN(timestamp)) return 'Recently';
+  const diffMs = Math.max(0, Date.now() - timestamp);
+  const diffSecs = Math.floor(diffMs / 1000);
+  const diffMins = Math.floor(diffSecs / 60);
+  const diffHours = Math.floor(diffMins / 60);
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (diffMins < 1) return 'Just now';
+  if (diffMins < 60) return `${diffMins} min${diffMins === 1 ? '' : 's'} ago`;
+  if (diffHours < 24) return `${diffHours} hr${diffHours === 1 ? '' : 's'} ago`;
+  if (diffDays === 1) return '1 day ago';
+  return `${diffDays} days ago`;
+}
