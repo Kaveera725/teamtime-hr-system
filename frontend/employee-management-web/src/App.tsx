@@ -15,6 +15,7 @@ import { ApprovalsPage } from '@/pages/ApprovalsPage';
 import { EmployeesPage } from '@/pages/EmployeesPage';
 import { DepartmentsPage } from '@/pages/DepartmentsPage';
 import { LeaveTypesPage } from '@/pages/LeaveTypesPage';
+import { ProfilePage } from '@/pages/ProfilePage';
 import { DesignPage } from '@/pages/DesignPage';
 import { UnauthorizedPage } from '@/pages/UnauthorizedPage';
 
@@ -50,6 +51,7 @@ export const App: React.FC = () => {
                   <Route path="/dashboard" element={<DashboardPage />} />
                   <Route path="/attendance" element={<AttendancePage />} />
                   <Route path="/leave" element={<LeavePage />} />
+                  <Route path="/profile" element={<ProfilePage />} />
 
                   {/* Manager & Admin */}
                   <Route element={<ProtectedRoute allowedRoles={['Manager', 'Admin']} />}>

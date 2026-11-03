@@ -3,7 +3,6 @@ import {
   X,
   Building2,
   User,
-  AlignLeft,
   CheckCircle2,
   Loader2,
 } from 'lucide-react';

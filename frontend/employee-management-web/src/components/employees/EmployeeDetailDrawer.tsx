@@ -7,7 +7,6 @@ import {
   Calendar,
   Briefcase,
   Shield,
-  Clock,
   Edit2,
   UserCheck,
   UserX,
@@ -77,11 +76,10 @@ export const EmployeeDetailDrawer: React.FC<EmployeeDetailDrawerProps> = ({
                   {data.employeeCode}
                 </span>
                 <span
-                  className={`inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full ${
-                    isActive
+                  className={`inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full ${isActive
                       ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300'
                       : 'bg-rose-100 text-rose-800 dark:bg-rose-950/70 dark:text-rose-300'
-                  }`}
+                    }`}
                 >
                   {isActive ? <UserCheck className="h-3 w-3" /> : <UserX className="h-3 w-3" />}
                   <span>{data.status}</span>

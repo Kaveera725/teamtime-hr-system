@@ -10,9 +10,7 @@ import {
   Building2,
   Calendar,
   CheckCircle2,
-  AlertCircle,
   Loader2,
-  Lock,
 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -342,8 +340,8 @@ export const EmployeeSideSheet: React.FC<EmployeeSideSheetProps> = ({
                     {role === 'ADMIN'
                       ? 'Admins have full master data control, employee directory access, and approvals.'
                       : role === 'MANAGER'
-                      ? 'Managers can view their department team, leave calendar, and approve team requests.'
-                      : 'Employees can track attendance, submit leaves, and inspect their own balances.'}
+                        ? 'Managers can view their department team, leave calendar, and approve team requests.'
+                        : 'Employees can track attendance, submit leaves, and inspect their own balances.'}
                   </span>
                 </div>
 

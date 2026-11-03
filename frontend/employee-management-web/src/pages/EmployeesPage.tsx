@@ -314,10 +314,16 @@ export const EmployeesPage: React.FC = () => {
                 ? 'Try adjusting your search keywords or clearing applied filters.'
                 : 'Get started by creating your first employee profile.'
             }
-            action={{
-              label: 'Add Employee',
-              onClick: handleOpenAdd,
-            }}
+            action={
+              <button
+                type="button"
+                onClick={handleOpenAdd}
+                className="btn btn-primary btn-md inline-flex items-center gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                <span>Add Employee</span>
+              </button>
+            }
             className="border-0 shadow-none bg-transparent"
           />
         </div>
@@ -444,11 +450,10 @@ export const EmployeesPage: React.FC = () => {
                       {/* Status Badge */}
                       <td className="py-3.5 px-4 text-center">
                         <span
-                          className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                            isActive
+                          className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${isActive
                               ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300'
                               : 'bg-rose-100 text-rose-800 dark:bg-rose-950/70 dark:text-rose-300'
-                          }`}
+                            }`}
                         >
                           {isActive ? <UserCheck className="h-3 w-3" /> : <UserX className="h-3 w-3" />}
                           <span>{emp.status}</span>

@@ -29,6 +29,24 @@ export interface LoginResponse {
   departmentId?: string | null;
 }
 
+export interface CurrentUserProfileDto {
+  userId: number;
+  email: string;
+  role: string;
+  employeeId: number;
+  employeeCode: string;
+  fullName: string;
+  firstName: string;
+  lastName: string;
+  departmentName: string;
+  position: string;
+}
+
+export interface ChangePasswordRequestDto {
+  currentPassword: string;
+  newPassword: string;
+}
+
 // ── Employee ──────────────────────────────────────────────
 export interface EmployeeListDto {
   id: number;

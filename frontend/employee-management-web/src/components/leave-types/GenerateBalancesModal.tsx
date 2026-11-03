@@ -3,7 +3,6 @@ import {
   Sparkles,
   X,
   CheckCircle2,
-  AlertTriangle,
   Users,
   Settings,
   PlusCircle,

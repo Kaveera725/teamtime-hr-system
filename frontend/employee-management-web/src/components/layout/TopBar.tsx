@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Menu,
   Sun,
@@ -158,32 +159,37 @@ export const TopBar: React.FC<TopBarProps> = ({ onOpenMobileMenu }) => {
         {/* User profile & Logout */}
         {user ? (
           <div className="flex items-center gap-3">
-            <Avatar name={user.name} size="sm" />
-            <div className="hidden sm:flex flex-col text-left">
-              <span className="text-xs font-semibold text-neutral-900 dark:text-neutral-100 leading-tight">
-                {user.name}
-              </span>
-              <div className="flex items-center gap-1.5 mt-0.5">
-                <span
-                  className={`text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.2 rounded border ${
-                    roleBadgeColor[user.role] || roleBadgeColor.Employee
-                  }`}
+                  <Link
+                    to="/profile"
+                    className="flex items-center gap-2.5 p-1 -m-1 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors group"
+                    title="View your profile"
+                  >
+                    <Avatar name={user.name} size="sm" />
+                    <div className="hidden sm:flex flex-col text-left">
+                      <span className="text-xs font-semibold text-neutral-900 dark:text-neutral-100 leading-tight group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+                        {user.name}
+                      </span>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <span
+                          className={`text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.2 rounded border ${roleBadgeColor[user.role] || roleBadgeColor.Employee
+                            }`}
+                        >
+                          {user.role}
+                        </span>
+                      </div>
+                    </div>
+                </Link>
+                <button
+                  onClick={logout}
+                  className="btn btn-ghost btn-icon h-9 w-9 text-neutral-500 hover:text-rose-600 dark:text-neutral-400 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30"
+                  title="Logout"
+                  aria-label="Logout"
                 >
-                  {user.role}
-                </span>
+                  <LogOut className="h-4 w-4" />
+                </button>
               </div>
-            </div>
-            <button
-              onClick={logout}
-              className="btn btn-ghost btn-icon h-9 w-9 text-neutral-500 hover:text-rose-600 dark:text-neutral-400 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30"
-              title="Logout"
-              aria-label="Logout"
-            >
-              <LogOut className="h-4 w-4" />
-            </button>
-          </div>
         ) : null}
-      </div>
-    </header>
-  );
+            </div>
+          </header>
+        );
 };

@@ -160,10 +160,16 @@ export const DepartmentsPage: React.FC = () => {
                 ? 'Try adjusting your search terms or clearing the filter.'
                 : 'Structure your organization by creating your first department.'
             }
-            action={{
-              label: 'Add Department',
-              onClick: handleOpenAdd,
-            }}
+            action={
+              <button
+                type="button"
+                onClick={handleOpenAdd}
+                className="btn btn-primary btn-md inline-flex items-center gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                <span>Add Department</span>
+              </button>
+            }
             className="border-0 shadow-none bg-transparent"
           />
         </div>

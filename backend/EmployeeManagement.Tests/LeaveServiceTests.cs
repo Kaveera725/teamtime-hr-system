@@ -238,22 +238,20 @@ public class LeaveServiceTests
         var (_, user, _, _, medicalLeave, _) = await SeedCommonData(context);
         var service = new LeaveService(context, _logger);
 
-        // 2 days ago (BR-09 allows up to 3 days backdate)
-        var twoDaysAgo = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-2));
-        while (twoDaysAgo.DayOfWeek == DayOfWeek.Saturday || twoDaysAgo.DayOfWeek == DayOfWeek.Sunday)
-        {
-            twoDaysAgo = twoDaysAgo.AddDays(-1);
-        }
+        // Within 3 days backdate (BR-09 allows up to 3 days backdate for medical leave)
+        var allowedPastDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-1));
+        if (allowedPastDate.DayOfWeek == DayOfWeek.Sunday) allowedPastDate = allowedPastDate.AddDays(-2);
+        else if (allowedPastDate.DayOfWeek == DayOfWeek.Saturday) allowedPastDate = allowedPastDate.AddDays(-1);
 
         // Ensure balance exists for that year
-        var balance = await context.LeaveBalances.FirstOrDefaultAsync(b => b.LeaveTypeId == medicalLeave.Id && b.Year == twoDaysAgo.Year);
+        var balance = await context.LeaveBalances.FirstOrDefaultAsync(b => b.LeaveTypeId == medicalLeave.Id && b.Year == allowedPastDate.Year);
         if (balance == null)
         {
             context.LeaveBalances.Add(new LeaveBalance
             {
                 EmployeeId = 1,
                 LeaveTypeId = medicalLeave.Id,
-                Year = twoDaysAgo.Year,
+                Year = allowedPastDate.Year,
                 AllocatedDays = 14m
             });
             await context.SaveChangesAsync();
@@ -262,8 +260,8 @@ public class LeaveServiceTests
         var request = new CreateLeaveRequestDto
         {
             LeaveTypeId = medicalLeave.Id,
-            StartDate = twoDaysAgo,
-            EndDate = twoDaysAgo,
+            StartDate = allowedPastDate,
+            EndDate = allowedPastDate,
             Reason = "Was sick"
         };
 
